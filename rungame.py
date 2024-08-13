@@ -1,6 +1,7 @@
 import numpy as np
 import time
 import random
+import math
 
 #Stationtypes - 1 is circle, 2 is triangle, 3 is rectangle, and 4 is misc
 stationtypes = np.zeros((30, 30))
@@ -48,9 +49,16 @@ def updateGame(timestamp):
     indeces = np.nonzero(metros)
     for i in indeces[0]:
         #Find the length of the route, assuming all straight lines
+        length = 0
+        previousPoint = (0,0)
         for j in routes[int(metros[i][0])]:
-            print(j)
-        metros[i][1] += timestamp * metrospeed
+            if not previousPoint == (0,0):
+                length += math.sqrt((previousPoint[0] - j[0]) ** 2 + ((previousPoint[1] - j[1]) ** 2))
+            previousPoint = (j[0], j[1])
+        try:
+            metros[int(i)][1] += (timestamp * metrospeed)/length
+        except:
+            pass
     print(metros)
 
 def addToMetroLine(line, startindex, stopindex):
