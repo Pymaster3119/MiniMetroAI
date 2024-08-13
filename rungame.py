@@ -2,7 +2,7 @@ import numpy as np
 import time
 import random
 import math
-
+import matplotlib.pyplot as plt
 #Stationtypes - 1 is circle, 2 is triangle, 3 is rectangle, and 4 is misc
 stationtypes = np.zeros((30, 30))
 connections = np.zeros((30,30,6))
@@ -59,7 +59,6 @@ def updateGame(timestamp):
             metros[int(i)][1] += (timestamp * metrospeed)/length
         except:
             pass
-    print(metros)
 
 def addToMetroLine(line, startindex, stopindex):
     global stationtypes, connections, routes, timer, stationspawntimer, passangerspawntimer, gameended, score
@@ -98,4 +97,24 @@ if __name__ == "__main__":
     while True:
         #print(score)
         updateGame(0.1)
-        time.sleep(0.1)
+        fig, axs = plt.subplots(1, 2, figsize=(10, 5)) 
+        axs[0].imshow(stationtypes, cmap='gray')
+        axs[0].set_title('Array 1')
+        axs[1].imshow(np.count_nonzero(connections, axis=2), cmap='gray')
+        colors = ["Red", "Blue", "Green", "Yellow", "Purple", "Orange", "Pink", "Cyan"]
+        for idx, i in enumerate(routes):
+            x = []
+            y = []
+            for j in i:
+                if j[0] != 0 and j[1] != 0:
+                    x.append(j[0])
+                    y.append(j[1])
+            axs[1].plot(x, y, marker = "o", color = colors[idx])
+        axs[1].set_title('Array 2')
+        axs[1].axis('off')
+        plt.show()
+
+        line = input("What line")
+        x = input("what x")
+        y = input("what y")
+        addToMetroLine(line, x, y)
