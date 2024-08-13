@@ -10,11 +10,13 @@ timer = 0
 stationspawntimer = 0
 passangerspawntimer = 0
 spawnweights = [0.7, 0.15, 0.1, 0.05]
+metros = np.zeros((28,8))
 gameended = False
 score = 0
+metrospeed = 0
 
 def updateGame(timestamp):
-    global stationtypes, connections, routes, timer, stationspawntimer, passangerspawntimer, gameended, score
+    global stationtypes, connections, routes, timer, stationspawntimer, passangerspawntimer, gameended, score, metrospeed
     if gameended:
         return
     timer += timestamp
@@ -42,6 +44,12 @@ def updateGame(timestamp):
                 print("GAME OVER")
                 gameended = True
 
+    #Move the metros
+    indeces = np.nonzero(metros)
+    for i in indeces[0]:
+        metros[i][1] += timestamp * metrospeed
+    print(metros)
+
 def addToMetroLine(line, startindex, stopindex):
     global stationtypes, connections, routes, timer, stationspawntimer, passangerspawntimer, gameended, score
     #Check if they are valid, and if they aren't then take off some score (and if it is the end of a line)
@@ -60,12 +68,23 @@ def addToMetroLine(line, startindex, stopindex):
     #Add point
     routes[line][index][0] = stopindex[0]
     routes[line][index][1] = stopindex[1]
-        
+
+def addMetroToLine(line):
+    global stationtypes, connections, routes, timer, stationspawntimer, passangerspawntimer, gameended, score
+    index = -1
+    for i in range(metros.shape[0]):
+        if metros[i][0]==0 and metros[i][1]==0:
+            index = i
+    if index == -1:
+        score -= 10
+    metros[index][0] = line
 
 if __name__ == "__main__":
 
     addToMetroLine(0, (15,2),(3,23))
+    for i in range(30):
+        addMetroToLine(1)
     while True:
-        print(score)
+        #print(score)
         updateGame(0.1)
-        time.sleep(0.01)
+        time.sleep(0.1)
