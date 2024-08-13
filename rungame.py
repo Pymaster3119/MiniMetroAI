@@ -13,7 +13,7 @@ spawnweights = [0.7, 0.15, 0.1, 0.05]
 metros = np.zeros((28,8))
 gameended = False
 score = 0
-metrospeed = 0
+metrospeed = 5
 
 def updateGame(timestamp):
     global stationtypes, connections, routes, timer, stationspawntimer, passangerspawntimer, gameended, score, metrospeed
@@ -47,6 +47,9 @@ def updateGame(timestamp):
     #Move the metros
     indeces = np.nonzero(metros)
     for i in indeces[0]:
+        #Find the length of the route, assuming all straight lines
+        for j in routes[int(metros[i][0])]:
+            print(j)
         metros[i][1] += timestamp * metrospeed
     print(metros)
 
