@@ -107,11 +107,13 @@ def removeLastPointFromMetroLine(line):
     routes[line, index, 0]=0
     routes[line, index, 1]=0
     
-
+fig = None
 if __name__ == "__main__":
     while True:
         updateGame(10)
         print(score)
+        if fig != None:
+            plt.close(fig)
         fig, axs = plt.subplots(1, 3, figsize=(10, 5)) 
         axs[0].imshow(stationtypes, cmap='gray')
         axs[0].xaxis.set_major_locator(plticker.MultipleLocator(base=1.0))
@@ -150,16 +152,16 @@ if __name__ == "__main__":
                             if prevlen <= distancecovered <= length:
                                 lengthalongline = distancecovered - prevlen
                                 print(lengthalongline)
-                                dir = (np.array(previousPoint) - np.array(j))/np.linalg.norm(np.array(previousPoint) - np.array(j))
-                                print(dir)
-                                point = np.array(previousPoint) + dir *  lengthalongline
-                                print(point)
+                                distance = math.sqrt((j[0]-previousPoint[0])**2 + (j[1]-previousPoint[1])**2)
+                                dir = (np.array(j) - np.array(previousPoint))/distance
+                                point = np.array(previousPoint) + (distance * dir)
+                                print(point )
                                 rect = plt.Rectangle(point - 0.5, 3, 1, color="blue") 
                                 axs[2].add_patch(rect)
                         previousPoint = j
                 except:
                     pass
-        plt.show()
+        plt.show(block=False)
 
         line = int(input("What line"))
         x = int(input("what x"))
