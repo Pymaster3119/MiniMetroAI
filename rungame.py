@@ -3,6 +3,7 @@ import time
 import random
 import math
 import matplotlib.pyplot as plt
+import matplotlib.ticker as plticker
 #Stationtypes - 1 is circle, 2 is triangle, 3 is rectangle, and 4 is misc
 stationtypes = np.zeros((30, 30))
 connections = np.zeros((30,30,6))
@@ -96,10 +97,13 @@ if __name__ == "__main__":
         addMetroToLine(1)
     while True:
         #print(score)
-        updateGame(0.1)
+        updateGame(10)
+        print(score)
         fig, axs = plt.subplots(1, 2, figsize=(10, 5)) 
         axs[0].imshow(stationtypes, cmap='gray')
-        axs[0].set_title('Array 1')
+        axs[0].xaxis.set_major_locator(plticker.MultipleLocator(base=1.0))
+        axs[0].yaxis.set_major_locator(plticker.MultipleLocator(base=1.0))
+        axs[0].grid()
         axs[1].imshow(np.count_nonzero(connections, axis=2), cmap='gray')
         colors = ["Red", "Blue", "Green", "Yellow", "Purple", "Orange", "Pink", "Cyan"]
         for idx, i in enumerate(routes):
@@ -110,11 +114,12 @@ if __name__ == "__main__":
                     x.append(j[0])
                     y.append(j[1])
             axs[1].plot(x, y, marker = "o", color = colors[idx])
-        axs[1].set_title('Array 2')
         axs[1].axis('off')
         plt.show()
 
-        line = input("What line")
-        x = input("what x")
-        y = input("what y")
-        addToMetroLine(line, x, y)
+        line = int(input("What line"))
+        x = int(input("what start x"))
+        y = int(input("what start y"))
+        x2 = int(input("what end x"))
+        y2 = int(input("what end y"))
+        addToMetroLine(line, (x, y), (x2, y2))
