@@ -113,8 +113,32 @@ if __name__ == "__main__":
                 if j[0] != 0 and j[1] != 0:
                     x.append(j[0])
                     y.append(j[1])
-            axs[1].plot(x, y, marker = "o", color = colors[idx])
+        
+        axs[1].plot(x, y, marker = "o", color = colors[idx])
         axs[1].axis('off')
+        for m in metros:
+            length = 0
+            previousPoint = (0,0)
+            i=routes[int(m[0])]
+            for j in i:
+                if j[0] != 0 and j[1] != 0:
+                    if previousPoint[0] != 0 or previousPoint[1] != 0:
+                        length += math.sqrt((j[0]-previousPoint[0])**2 + (j[0]-previousPoint[0])**2)
+                previousPoint = j
+            distancecovered = (m[1]%100)/length
+            length = 0
+            previousPoint = (0,0)
+            for j in i:
+                if j[0] != 0 and j[1] != 0:
+                    if previousPoint[0] != 0 or previousPoint[1] != 0:
+                        prevlen = length
+                        nextlen = length + math.sqrt((j[0]-previousPoint[0])**2 + (j[0]-previousPoint[0])**2)
+                        if prevlen < distancecovered < nextlen:
+                            #Draw in the thing
+                            pass
+                        else:
+                            length = nextlen
+                previousPoint = j
         plt.show()
 
         line = int(input("What line"))
