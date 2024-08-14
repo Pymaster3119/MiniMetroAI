@@ -113,6 +113,8 @@ if __name__ == "__main__":
         axs[0].yaxis.set_major_locator(plticker.MultipleLocator(base=1.0))
         axs[0].grid()
         axs[1].imshow(np.count_nonzero(connections, axis=2), cmap='gray')
+
+        axs[2].imshow(np.zeros((30,30, 3)))
         colors = ["red", "blue", "green", "yellow", "purple", "orange", "pink", "cyan"]
         for idx, i in enumerate(routes):
             x = []
@@ -122,9 +124,7 @@ if __name__ == "__main__":
                     x.append(j[0])
                     y.append(j[1])
             print(x, y)
-        
-        axs[2].plot(x, y, marker = "o", color = colors[idx])
-        axs[2].axis('off')
+            axs[2].plot(y, x, marker = "o", color = colors[idx])
         for m in metros:
             try:
                 length = 0
@@ -135,7 +135,9 @@ if __name__ == "__main__":
                         if previousPoint[0] != 0 or previousPoint[1] != 0:
                             length += math.sqrt((j[0]-previousPoint[0])**2 + (j[0]-previousPoint[0])**2)
                     previousPoint = j
+                print(length)
                 distancecovered = (m[1]%100)/length
+                print(distancecovered)
                 length = 0
                 previousPoint = (0,0)
                 for j in i:
@@ -143,17 +145,18 @@ if __name__ == "__main__":
                         if previousPoint[0] != 0 or previousPoint[1] != 0:
                             prevlen = length
                             nextlen = length + math.sqrt((j[0]-previousPoint[0])**2 + (j[0]-previousPoint[0])**2)
-                            if prevlen < distancecovered < nextlen:
+                            if prevlen <= distancecovered <= nextlen:
                                 lengthalongline = distancecovered - prevlen
                                 dir = np.array(previousPoint) - np.array(j)/np.linalg.norm(np.array(previousPoint) - np.array(j))
                                 point = np.array(previousPoint) + dir *  lengthalongline
+                                print("HERE")
                                 rect = plt.Rectangle(point - 0.5, 3, 1, color="blue") 
                                 axs[2].add_patch(rect)
                             else:
                                 length = nextlen
                     previousPoint = j
-            except:
-                pass
+            except Exception as e:
+                print(e)
         plt.show()
 
         line = int(input("What line"))
