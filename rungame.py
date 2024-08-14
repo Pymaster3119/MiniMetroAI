@@ -16,6 +16,8 @@ metros = np.zeros((28,8))
 gameended = False
 score = 0
 metrospeed = 5
+for i in range(metros.shape[0]):
+    metros[i][0] = -1
 
 def updateGame(timestamp):
     global stationtypes, connections, routes, timer, stationspawntimer, passangerspawntimer, gameended, score, metrospeed
@@ -47,19 +49,23 @@ def updateGame(timestamp):
                 gameended = True
 
     #Move the metros
-    indeces = np.nonzero(metros)
-    for i in indeces[0]:
-        #Find the length of the route, assuming all straight lines
-        length = 0
-        previousPoint = (0,0)
-        for j in routes[int(metros[i][0])]:
-            if not previousPoint == (0,0):
-                length += math.sqrt((previousPoint[0] - j[0]) ** 2 + ((previousPoint[1] - j[1]) ** 2))
-            previousPoint = (j[0], j[1])
-        try:
-            metros[int(i)][1] += (timestamp * metrospeed)/length
-        except:
-            pass
+    indeces = []
+    for idx, i in enumerate(metros):
+        if i[0] != -1:
+            indeces.append(idx)
+    if len(indeces) != 0:
+        for i in indeces:
+            #Find the length of the route, assuming all straight lines
+            length = 0
+            previousPoint = (0,0)
+            for j in routes[int(metros[i][0])]:
+                if not previousPoint == (0,0):
+                    length += math.sqrt((previousPoint[0] - j[0]) ** 2 + ((previousPoint[1] - j[1]) ** 2))
+                previousPoint = (j[0], j[1])
+            try:
+                metros[int(i)][1] += (timestamp * metrospeed)/length
+            except:
+                pass
 
 def addToMetroLine(line, stopindex):
     global stationtypes, connections, routes, timer, stationspawntimer, passangerspawntimer, gameended, score
@@ -71,8 +77,7 @@ def addToMetroLine(line, stopindex):
     index = 0
     for i in range(routes.shape[1]):
         if routes[line, i, 0] != 0 and routes[line, i, 1] != 0:
-            index = i + 1
-    print(index)
+            index = i
     if not (routes[line][0][0] == 0 and routes[line][0][1] == 0):
         score -= 10
         return
@@ -86,7 +91,7 @@ def addMetroToLine(line):
     index = -1
     for i in range(metros.shape[0]):
         if metros[i][0]==0 and metros[i][1]==0:
-            index = i + 1
+            index = i
     if index == -1:
         score -= 10
     metros[index][0] = line
@@ -96,7 +101,7 @@ def removeLastPointFromMetroLine(line):
     index = -1
     for i in range(routes.shape[1]):
         if routes[line, i, 0] != 0 and routes[line, i, 1] != 0:
-            index = i + 1
+            index = i
     if index == -1:
         return
     routes[line, index, 0]=0
@@ -123,38 +128,37 @@ if __name__ == "__main__":
                 if j[0] != 0 and j[1] != 0:
                     x.append(j[0])
                     y.append(j[1])
-            print(x, y)
             axs[2].plot(y, x, marker = "o", color = colors[idx])
         for m in metros:
-            try:
-                length = 0
-                previousPoint = (0,0)
-                i=routes[int(m[0])]
-                for j in i:
-                    if previousPoint[0] != 0 or previousPoint[1] != 0 and j[0] != 0 and j[1] != 0:
-                        print("HERE!!!")
-                        length += math.sqrt((j[0]-previousPoint[0])**2 + (j[1]-previousPoint[1])**2)
-                    previousPoint = j
-                print(length)
-                distancecovered = (m[1]%100)/length
-                print(distancecovered)
-                length = 0
-                previousPoint = (0,0)
-                for j in i:
-                    if previousPoint[0] != 0 or previousPoint[1] != 0:
-                        prevlen = length
-                        nextlen = length + math.sqrt((j[0]-previousPoint[0])**2 + (j[0]-previousPoint[0])**2)
-                        if prevlen <= distancecovered <= nextlen:
-                            lengthalongline = distancecovered - prevlen
-                            dir = np.array(previousPoint) - np.array(j)/np.linalg.norm(np.array(previousPoint) - np.array(j))
-                            point = np.array(previousPoint) + dir *  lengthalongline\
-                            rect = plt.Rectangle(point - 0.5, 3, 1, color="blue") 
-                            axs[2].add_patch(rect)
-                        else:
-                            length = nextlen
-                    previousPoint = j
-            except Exception as e:
-                print(e)
+            if m[0] != -1:
+                try:
+                    length = 0
+                    previousPoint = (0,0)
+                    i=routes[int(m[0])]
+                    for j in i:
+                        if previousPoint[0] != 0 and previousPoint[1] != 0 and j[0] != 0 and j[1] != 0:
+                            length += math.sqrt((j[0]-previousPoint[0])**2 + (j[1]-previousPoint[1])**2)
+                        previousPoint = j
+                    distancecovered = (m[1]%100)/length
+                    print(distancecovered)
+                    length = 0
+                    previousPoint = (0,0)
+                    for j in i:
+                        if previousPoint[0] != 0 and previousPoint[1] != 0 and j[0] != 0 and j[1] != 0:
+                            prevlen = length
+                            length += math.sqrt((j[0]-previousPoint[0])**2 + (j[1]-previousPoint[1])**2)
+                            if prevlen <= distancecovered <= length:
+                                lengthalongline = distancecovered - prevlen
+                                print(lengthalongline)
+                                dir = (np.array(previousPoint) - np.array(j))/np.linalg.norm(np.array(previousPoint) - np.array(j))
+                                print(dir)
+                                point = np.array(previousPoint) + dir *  lengthalongline
+                                print(point)
+                                rect = plt.Rectangle(point - 0.5, 3, 1, color="blue") 
+                                axs[2].add_patch(rect)
+                        previousPoint = j
+                except:
+                    pass
         plt.show()
 
         line = int(input("What line"))
