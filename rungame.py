@@ -61,24 +61,25 @@ def updateGame(timestamp):
         except:
             pass
 
-def addToMetroLine(line, startindex, stopindex):
+def addToMetroLine(line, stopindex):
     global stationtypes, connections, routes, timer, stationspawntimer, passangerspawntimer, gameended, score
     #Check if they are valid, and if they aren't then take off some score (and if it is the end of a line)
-    if stationtypes[startindex[0]][startindex[1]] == 0 or stationtypes[stopindex[0]][stopindex[1]] == 0:
+    if stationtypes[stopindex[0]][stopindex[1]] == 0:
         score -= 10
         return
 
     index = 0
     for i in range(routes.shape[1]):
-        if routes[0, i, 0] == 0 and routes[0, i, 1] == 0:
+        if routes[0, i, 0] != 0 and routes[0, i, 1] != 0:
             index = i
-    if not (routes[line][0][0] == 0 and routes[line][0][1] == 0) or not (routes[line][index - 1][0] == startindex[0] and routes[line][index - 1][1] == startindex[1]):
+    print(index)
+    if not (routes[line][0][0] == 0 and routes[line][0][1] == 0):
         score -= 10
         return
     
     #Add point
-    routes[line][index][0] = stopindex[0]
-    routes[line][index][1] = stopindex[1]
+    routes[line][index + 1][0] = stopindex[0]
+    routes[line][index + 1][1] = stopindex[1]
 
 def addMetroToLine(line):
     global stationtypes, connections, routes, timer, stationspawntimer, passangerspawntimer, gameended, score
@@ -92,14 +93,13 @@ def addMetroToLine(line):
 
 if __name__ == "__main__":
 
-    addToMetroLine(0, (15,2),(3,23))
     for i in range(30):
         addMetroToLine(1)
     while True:
         #print(score)
         updateGame(10)
         print(score)
-        fig, axs = plt.subplots(1, 2, figsize=(10, 5)) 
+        fig, axs = plt.subplots(1, 3, figsize=(10, 5)) 
         axs[0].imshow(stationtypes, cmap='gray')
         axs[0].xaxis.set_major_locator(plticker.MultipleLocator(base=1.0))
         axs[0].yaxis.set_major_locator(plticker.MultipleLocator(base=1.0))
@@ -113,37 +113,42 @@ if __name__ == "__main__":
                 if j[0] != 0 and j[1] != 0:
                     x.append(j[0])
                     y.append(j[1])
+            print(x, y)
         
-        axs[1].plot(x, y, marker = "o", color = colors[idx])
-        axs[1].axis('off')
+        axs[2].plot(x, y, marker = "o", color = colors[idx])
+        axs[2].axis('off')
         for m in metros:
-            length = 0
-            previousPoint = (0,0)
-            i=routes[int(m[0])]
-            for j in i:
-                if j[0] != 0 and j[1] != 0:
-                    if previousPoint[0] != 0 or previousPoint[1] != 0:
-                        length += math.sqrt((j[0]-previousPoint[0])**2 + (j[0]-previousPoint[0])**2)
-                previousPoint = j
-            distancecovered = (m[1]%100)/length
-            length = 0
-            previousPoint = (0,0)
-            for j in i:
-                if j[0] != 0 and j[1] != 0:
-                    if previousPoint[0] != 0 or previousPoint[1] != 0:
-                        prevlen = length
-                        nextlen = length + math.sqrt((j[0]-previousPoint[0])**2 + (j[0]-previousPoint[0])**2)
-                        if prevlen < distancecovered < nextlen:
-                            #Draw in the thing
-                            pass
-                        else:
-                            length = nextlen
-                previousPoint = j
+            try:
+                length = 0
+                previousPoint = (0,0)
+                i=routes[int(m[0])]
+                for j in i:
+                    if j[0] != 0 and j[1] != 0:
+                        if previousPoint[0] != 0 or previousPoint[1] != 0:
+                            length += math.sqrt((j[0]-previousPoint[0])**2 + (j[0]-previousPoint[0])**2)
+                    previousPoint = j
+                distancecovered = (m[1]%100)/length
+                length = 0
+                previousPoint = (0,0)
+                for j in i:
+                    if j[0] != 0 and j[1] != 0:
+                        if previousPoint[0] != 0 or previousPoint[1] != 0:
+                            prevlen = length
+                            nextlen = length + math.sqrt((j[0]-previousPoint[0])**2 + (j[0]-previousPoint[0])**2)
+                            if prevlen < distancecovered < nextlen:
+                                lengthalongline = distancecovered - prevlen
+                                dir = np.array(previousPoint) - np.array(j)/np.linalg.norm(np.array(previousPoint) - np.array(j))
+                                point = np.array(previousPoint) + dir *  lengthalongline
+                                rect = plt.Rectangle(point - 0.5, 3, 1, color="black") 
+                                axs[2].add_patch(rect)
+                            else:
+                                length = nextlen
+                    previousPoint = j
+            except:
+                pass
         plt.show()
 
         line = int(input("What line"))
-        x = int(input("what start x"))
-        y = int(input("what start y"))
-        x2 = int(input("what end x"))
-        y2 = int(input("what end y"))
-        addToMetroLine(line, (x, y), (x2, y2))
+        x = int(input("what x"))
+        y = int(input("what y"))
+        addToMetroLine(line, (x, y))
