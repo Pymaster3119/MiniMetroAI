@@ -71,7 +71,7 @@ def addToMetroLine(line, stopindex):
     index = 0
     for i in range(routes.shape[1]):
         if routes[line, i, 0] != 0 and routes[line, i, 1] != 0:
-            index = i
+            index = i + 1
     print(index)
     if not (routes[line][0][0] == 0 and routes[line][0][1] == 0):
         score -= 10
@@ -86,7 +86,7 @@ def addMetroToLine(line):
     index = -1
     for i in range(metros.shape[0]):
         if metros[i][0]==0 and metros[i][1]==0:
-            index = i
+            index = i + 1
     if index == -1:
         score -= 10
     metros[index][0] = line
@@ -96,7 +96,7 @@ def removeLastPointFromMetroLine(line):
     index = -1
     for i in range(routes.shape[1]):
         if routes[line, i, 0] != 0 and routes[line, i, 1] != 0:
-            index = i
+            index = i + 1
     if index == -1:
         return
     routes[line, index, 0]=0
@@ -131,9 +131,9 @@ if __name__ == "__main__":
                 previousPoint = (0,0)
                 i=routes[int(m[0])]
                 for j in i:
-                    if j[0] != 0 and j[1] != 0:
-                        if previousPoint[0] != 0 or previousPoint[1] != 0:
-                            length += math.sqrt((j[0]-previousPoint[0])**2 + (j[0]-previousPoint[0])**2)
+                    if previousPoint[0] != 0 or previousPoint[1] != 0 and j[0] != 0 and j[1] != 0:
+                        print("HERE!!!")
+                        length += math.sqrt((j[0]-previousPoint[0])**2 + (j[1]-previousPoint[1])**2)
                     previousPoint = j
                 print(length)
                 distancecovered = (m[1]%100)/length
@@ -141,19 +141,17 @@ if __name__ == "__main__":
                 length = 0
                 previousPoint = (0,0)
                 for j in i:
-                    if j[0] != 0 and j[1] != 0:
-                        if previousPoint[0] != 0 or previousPoint[1] != 0:
-                            prevlen = length
-                            nextlen = length + math.sqrt((j[0]-previousPoint[0])**2 + (j[0]-previousPoint[0])**2)
-                            if prevlen <= distancecovered <= nextlen:
-                                lengthalongline = distancecovered - prevlen
-                                dir = np.array(previousPoint) - np.array(j)/np.linalg.norm(np.array(previousPoint) - np.array(j))
-                                point = np.array(previousPoint) + dir *  lengthalongline
-                                print("HERE")
-                                rect = plt.Rectangle(point - 0.5, 3, 1, color="blue") 
-                                axs[2].add_patch(rect)
-                            else:
-                                length = nextlen
+                    if previousPoint[0] != 0 or previousPoint[1] != 0:
+                        prevlen = length
+                        nextlen = length + math.sqrt((j[0]-previousPoint[0])**2 + (j[0]-previousPoint[0])**2)
+                        if prevlen <= distancecovered <= nextlen:
+                            lengthalongline = distancecovered - prevlen
+                            dir = np.array(previousPoint) - np.array(j)/np.linalg.norm(np.array(previousPoint) - np.array(j))
+                            point = np.array(previousPoint) + dir *  lengthalongline\
+                            rect = plt.Rectangle(point - 0.5, 3, 1, color="blue") 
+                            axs[2].add_patch(rect)
+                        else:
+                            length = nextlen
                     previousPoint = j
             except Exception as e:
                 print(e)
@@ -166,3 +164,5 @@ if __name__ == "__main__":
 
         if input("Do you wanna remova line?") == "t":
             removeLastPointFromMetroLine(int(input("What line?")))
+        
+        addMetroToLine(int(input("What line do you wanna add a train to?")))
