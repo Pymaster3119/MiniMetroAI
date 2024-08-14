@@ -63,14 +63,14 @@ def updateGame(timestamp):
 
 def addToMetroLine(line, stopindex):
     global stationtypes, connections, routes, timer, stationspawntimer, passangerspawntimer, gameended, score
-    #Check if they are valid, and if they aren't then take off some score (and if it is the end of a line)
+    #Check if they are valid, and if they aren't then take off some score
     if stationtypes[stopindex[0]][stopindex[1]] == 0:
         score -= 10
         return
 
     index = 0
     for i in range(routes.shape[1]):
-        if routes[0, i, 0] != 0 and routes[0, i, 1] != 0:
+        if routes[line, i, 0] != 0 and routes[line, i, 1] != 0:
             index = i
     print(index)
     if not (routes[line][0][0] == 0 and routes[line][0][1] == 0):
@@ -91,12 +91,20 @@ def addMetroToLine(line):
         score -= 10
     metros[index][0] = line
 
-if __name__ == "__main__":
+def removeLastPointFromMetroLine(line):
+    global stationtypes, connections, routes, timer, stationspawntimer, passangerspawntimer, gameended, score
+    index = -1
+    for i in range(routes.shape[1]):
+        if routes[line, i, 0] != 0 and routes[line, i, 1] != 0:
+            index = i
+    if index == -1:
+        return
+    routes[line, index, 0]=0
+    routes[line, index, 1]=0
+    
 
-    for i in range(30):
-        addMetroToLine(1)
+if __name__ == "__main__":
     while True:
-        #print(score)
         updateGame(10)
         print(score)
         fig, axs = plt.subplots(1, 3, figsize=(10, 5)) 
@@ -105,7 +113,7 @@ if __name__ == "__main__":
         axs[0].yaxis.set_major_locator(plticker.MultipleLocator(base=1.0))
         axs[0].grid()
         axs[1].imshow(np.count_nonzero(connections, axis=2), cmap='gray')
-        colors = ["Red", "Blue", "Green", "Yellow", "Purple", "Orange", "Pink", "Cyan"]
+        colors = ["red", "blue", "green", "yellow", "purple", "orange", "pink", "cyan"]
         for idx, i in enumerate(routes):
             x = []
             y = []
@@ -139,7 +147,7 @@ if __name__ == "__main__":
                                 lengthalongline = distancecovered - prevlen
                                 dir = np.array(previousPoint) - np.array(j)/np.linalg.norm(np.array(previousPoint) - np.array(j))
                                 point = np.array(previousPoint) + dir *  lengthalongline
-                                rect = plt.Rectangle(point - 0.5, 3, 1, color="black") 
+                                rect = plt.Rectangle(point - 0.5, 3, 1, color="blue") 
                                 axs[2].add_patch(rect)
                             else:
                                 length = nextlen
@@ -152,3 +160,6 @@ if __name__ == "__main__":
         x = int(input("what x"))
         y = int(input("what y"))
         addToMetroLine(line, (x, y))
+
+        if input("Do you wanna remova line?") == "t":
+            removeLastPointFromMetroLine(int(input("What line?")))
