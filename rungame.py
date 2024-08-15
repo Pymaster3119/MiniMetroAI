@@ -63,6 +63,19 @@ def updateGame(timestamp):
                     length += math.sqrt((previousPoint[0] - j[0]) ** 2 + ((previousPoint[1] - j[1]) ** 2))
                 previousPoint = (j[0], j[1])
             try:
+                distancecovered = (metros[i][1]%100)/length
+                lengthtemp = 0
+                previousPoint = (0,0)
+                for j in routes[int(metros[i][0])]:
+                    if not previousPoint == (0,0):
+                        if abs(distancecovered-length) < 1:
+                            print("unloading passengers")
+                            for k in range(2,7):
+                                print("TODO")
+                            raise Exception("This was used in place of a break statement!!!")
+                        lengthtemp += math.sqrt((previousPoint[0] - j[0]) ** 2 + ((previousPoint[1] - j[1]) ** 2))
+
+                    previousPoint = (j[0], j[1])
                 metros[int(i)][1] += (timestamp * metrospeed)/length
             except:
                 pass
