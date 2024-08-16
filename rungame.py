@@ -48,12 +48,14 @@ def updateGame(timestamp):
                 print("GAME OVER")
                 gameended = True
 
-    #Move the metros
+    #Deal with the metros
     for i in range(28):
         metro = metros[i]
         route = metro[0]
         distancealongroute = metro[1]
         totallinelength = lengthAlongLine(route)
+        #Update the metro's position
+        metros[i][1] != metrospeed/totallinelength
         distancecovered = distancealongroute/totallinelength
 
 def lengthAlongLine(line):
