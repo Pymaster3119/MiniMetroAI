@@ -56,7 +56,33 @@ def updateGame(timestamp):
         totallinelength = lengthAlongLine(route)
         #Update the metro's position
         metros[i][1] != metrospeed/totallinelength
-        distancecovered = distancealongroute/totallinelength
+
+        #If next to a station, pick people up
+        pos = findPositionOfMetro(metro)
+
+
+def findPositionOfMetro(metro):
+    route = metro[0]
+    distancealongroute = metro[1]
+    routelength = lengthAlongLine(route)
+    distancecovered = distancealongroute/routelength
+    length = 0
+    for i in range(8):
+        station = routes[route][i]
+        laststation = routes[route][i-1]
+        prevlength = length
+        length += math.sqrt((station[0]-laststation[0])**2 + (station[1]-laststation[1])**2)
+        if prevlength < distancealongroute < length:
+            x1, y1 = station
+            x2, y2 = laststation
+            dx, dy = x2 - x1, y2 - y1
+            length = math.sqrt(dx**2 + dy**2)
+            dx /= length
+            dy /= length
+            x = x1 + dx * (distancealongroute-prevlength)
+            y = y1 + dy * (distancealongroute-prevlength)
+            return x,y
+
 
 def lengthAlongLine(line):
     length = 0
