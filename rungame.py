@@ -52,14 +52,33 @@ def updateGame(timestamp):
     for i in range(28):
         metro = metros[i]
         route = metro[0]
-        distancealongroute = metro[1]
-        totallinelength = lengthAlongLine(route)
-        #Update the metro's position
-        metros[i][1] != metrospeed/totallinelength
+        if route != -1:
+            distancealongroute = metro[1]
+            totallinelength = lengthAlongLine(route)
+            #Update the metro's position
+            metros[i][1] != metrospeed/totallinelength
 
-        #If next to a station, pick people up
-        pos = findPositionOfMetro(metro)
+            #If next to a station, pick people up
+            pos = findPositionOfMetro(metro)
+            for j in range(8):
+                station = routes[route][j]
+                if math.sqrt((station[0]-pos[0])**2 + (station[1]-pos[1])**2) < 1:
+                    #Unload passangers
+                    stationtype = stationtypes[station[0]][station[1]]
+                    for k in range(2,8):
+                        if metro[k] == stationtype:
+                            metro[k] = 0
+                            score += 1
+                    
+                    #Load up passangers
+                    for k in range(5, -1, -1):
+                        passangertype = connections[station[0]][station[1]][k]
 
+                        for l in range(2,8):
+                            if metro[l] == 0:
+                                metros[i][l] = passangertype
+                                connections[station[0]][station[1]][k] = 0
+                                break
 
 def findPositionOfMetro(metro):
     route = metro[0]
@@ -81,14 +100,14 @@ def findPositionOfMetro(metro):
             dy /= length
             x = x1 + dx * (distancealongroute-prevlength)
             y = y1 + dy * (distancealongroute-prevlength)
-            return x,y
+            return (x,y)
 
 
 def lengthAlongLine(line):
     length = 0
     for i in range(8):
-        station = routes[line][i]
-        laststation = routes[line][i-1]
+        station = routes[int(line)][int(i)]
+        laststation = routes[int(line)][int(i-1)]
         length += math.sqrt((station[0]-laststation[0])**2 + (station[1]-laststation[1])**2)
 
     return length
