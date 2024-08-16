@@ -1,17 +1,17 @@
 import numpy as np
-import time
 import random
 import math
-import matplotlib.pyplot as plt
-import matplotlib.ticker as plticker
 #Stationtypes - 1 is circle, 2 is triangle, 3 is rectangle, and 4 is misc
 stationtypes = np.zeros((30, 30))
+#List of passangers - 6 passangers max
 connections = np.zeros((30,30,6))
+#List of routes - 7 routes, 8 stations/route, 2 coordinates/stations
 routes = np.zeros((7,8,2))
 timer = 0
 stationspawntimer = 0
 passangerspawntimer = 0
 spawnweights = [0.7, 0.15, 0.1, 0.05]
+#Metros - 28 metros, for each metro, 0 represents the route number (-1 is invalid), 1 reprersents distance along route, and 2-7 represents the passangers
 metros = np.zeros((28,8))
 gameended = False
 score = 0
@@ -49,36 +49,21 @@ def updateGame(timestamp):
                 gameended = True
 
     #Move the metros
-    indeces = []
-    for idx, i in enumerate(metros):
-        if i[0] != -1:
-            indeces.append(idx)
-    if len(indeces) != 0:
-        for i in indeces:
-            #Find the length of the route, assuming all straight lines
-            length = 0
-            previousPoint = (0,0)
-            for j in routes[int(metros[i][0])]:
-                if not previousPoint == (0,0):
-                    length += math.sqrt((previousPoint[0] - j[0]) ** 2 + ((previousPoint[1] - j[1]) ** 2))
-                previousPoint = (j[0], j[1])
-            try:
-                distancecovered = (metros[i][1]%100)/length
-                lengthtemp = 0
-                previousPoint = (0,0)
-                for j in routes[int(metros[i][0])]:
-                    if not previousPoint == (0,0):
-                        if abs(distancecovered-length) < 1:
-                            print("unloading passengers")
-                            for k in range(2,7):
-                                print("TODO")
-                            raise Exception("This was used in place of a break statement!!!")
-                        lengthtemp += math.sqrt((previousPoint[0] - j[0]) ** 2 + ((previousPoint[1] - j[1]) ** 2))
+    for i in range(28):
+        metro = metros[i]
+        route = metro[0]
+        distancealongroute = metro[1]
+        totallinelength = lengthAlongLine(route)
+        distancecovered = distancealongroute/totallinelength
 
-                    previousPoint = (j[0], j[1])
-                metros[int(i)][1] += (timestamp * metrospeed)/length
-            except:
-                pass
+def lengthAlongLine(line):
+    length = 0
+    for i in range(8):
+        station = routes[line][i]
+        laststation = routes[line][i-1]
+        length += math.sqrt((station[0]-laststation[0])**2 + (station[1]-laststation[1])**2)
+
+    return length
 
 def addToMetroLine(line, stopindex):
     global stationtypes, connections, routes, timer, stationspawntimer, passangerspawntimer, gameended, score
@@ -120,68 +105,3 @@ def removeLastPointFromMetroLine(line):
     routes[line, index, 0]=0
     routes[line, index, 1]=0
     
-fig = None
-if __name__ == "__main__":
-    while True:
-        updateGame(10)
-        print(score)
-        if fig != None:
-            plt.close(fig)
-        fig, axs = plt.subplots(1, 3, figsize=(10, 5)) 
-        axs[0].imshow(stationtypes, cmap='gray')
-        axs[0].xaxis.set_major_locator(plticker.MultipleLocator(base=1.0))
-        axs[0].yaxis.set_major_locator(plticker.MultipleLocator(base=1.0))
-        axs[0].grid()
-        axs[1].imshow(np.count_nonzero(connections, axis=2), cmap='gray')
-
-        axs[2].imshow(np.zeros((30,30, 3)))
-        colors = ["red", "blue", "green", "yellow", "purple", "orange", "pink", "cyan"]
-        for idx, i in enumerate(routes):
-            x = []
-            y = []
-            for j in i:
-                if j[0] != 0 and j[1] != 0:
-                    x.append(j[0])
-                    y.append(j[1])
-            axs[2].plot(y, x, marker = "o", color = colors[idx])
-        for m in metros:
-            if m[0] != -1:
-                try:
-                    length = 0
-                    previousPoint = (0,0)
-                    i=routes[int(m[0])]
-                    for j in i:
-                        if previousPoint[0] != 0 and previousPoint[1] != 0 and j[0] != 0 and j[1] != 0:
-                            length += math.sqrt((j[0]-previousPoint[0])**2 + (j[1]-previousPoint[1])**2)
-                        previousPoint = j
-                    distancecovered = (m[1]%100)/length
-                    print(distancecovered)
-                    length = 0
-                    previousPoint = (0,0)
-                    for j in i:
-                        if previousPoint[0] != 0 and previousPoint[1] != 0 and j[0] != 0 and j[1] != 0:
-                            prevlen = length
-                            length += math.sqrt((j[0]-previousPoint[0])**2 + (j[1]-previousPoint[1])**2)
-                            if prevlen <= distancecovered <= length:
-                                lengthalongline = distancecovered - prevlen
-                                print(lengthalongline)
-                                distance = math.sqrt((j[0]-previousPoint[0])**2 + (j[1]-previousPoint[1])**2)
-                                dir = (np.array(j) - np.array(previousPoint))/distance
-                                point = np.array(previousPoint) + (distance * dir)
-                                print(point )
-                                rect = plt.Rectangle(point - 0.5, 3, 1, color="blue") 
-                                axs[2].add_patch(rect)
-                        previousPoint = j
-                except:
-                    pass
-        plt.show(block=False)
-
-        line = int(input("What line"))
-        x = int(input("what x"))
-        y = int(input("what y"))
-        addToMetroLine(line, (x, y))
-
-        if input("Do you wanna remova line?") == "t":
-            removeLastPointFromMetroLine(int(input("What line?")))
-        
-        addMetroToLine(int(input("What line do you wanna add a train to?")))
