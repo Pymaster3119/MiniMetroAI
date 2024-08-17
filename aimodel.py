@@ -1,9 +1,55 @@
-from rungame import *
+import rungame as rg
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 from collections import namedtuple, deque
+import gymnasium as gym
+from gymnasium import spaces
+import random
+
+class CustomEnv(gym.Env):
+    def __init__(self):
+        super(CustomEnv, self).__init__()
+        self.action_space = spaces.Discrete(3)
+        self.observation_space = spaces.Box(low=0, high=1, shape=(3,), dtype=np.float32)
+
+        self.state = None
+
+    def reset(self):
+        rg.stationtypes = rg.np.zeros((30, 30))
+        rg.connections = rg.np.zeros((30,30,6))
+        rg.routes = rg.np.zeros((7,8,2))
+        rg.timer = 0
+        rg.stationspawntimer = 0
+        rg.passangerspawntimer = 0
+        rg.spawnweights = [0.7, 0.15, 0.1, 0.05]
+        rg.metros = rg.np.zeros((28,8))
+        rg.gameended = False
+        rg.score = 0
+        rg.metrospeed = 5
+        self.state = 0
+        return self.state
+
+    def step(self, action):
+        reward = 0
+        done = False
+
+        if action[0] == 0:
+            rg.addMetroToLine(action[1])
+        if action[0] == 1:
+            rg.addToMetroLine(action[1], action[2])
+        if action[0] == 2:
+            rg.removeLastPointFromMetroLine(action[1])
+
+        if rg.np.sum(self.state) > 10:
+            done = True
+            reward = 1
+
+        return self.state, reward, done, False, {}
+
+    def close(self):
+        pass
 
 device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
 
@@ -52,3 +98,12 @@ n_actions = 4
 
 #State space - 30x30 array for the stationtypes, 30x30x6 array for the passanger counts, 7x8x2 array representing the routes, and a 28x8 array representing the metros
 n_observations = 6636
+
+policy_net = DQN(n_observations, n_actions).to(device)
+target_net = DQN(n_observations, n_actions).to(device)
+target_net.load_state_dict(policy_net.state_dict())
+
+optimizer = optim.AdamW(policy_net.parameters(), lr=LR, amsgrad=True)
+memory = ReplayMemory(10000)
+
+steps_done = 0
