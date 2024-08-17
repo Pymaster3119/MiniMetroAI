@@ -7,45 +7,15 @@ from collections import namedtuple, deque
 import gymnasium as gym
 from gymnasium import spaces
 import random
+from gymnasium.envs.registration import register
+import math
+import matplotlib
+import matplotlib.pyplot as plt
 
-class CustomEnv(gym.Env):
-    def __init__(self):
-        super(CustomEnv, self).__init__()
-        self.action_space = spaces.Discrete(3)
-        self.observation_space = spaces.Box(low=0, high=1, shape=(3,), dtype=np.float32)
+register(id='MiniMetro-v0', entry_point='environment:Env')
+env = gym.make('MiniMetro-v0')
 
-        self.state = None
-
-    def reset(self):
-        rg.stationtypes = rg.np.zeros((30, 30))
-        rg.connections = rg.np.zeros((30,30,6))
-        rg.routes = rg.np.zeros((7,8,2))
-        rg.timer = 0
-        rg.stationspawntimer = 0
-        rg.passangerspawntimer = 0
-        rg.spawnweights = [0.7, 0.15, 0.1, 0.05]
-        rg.metros = rg.np.zeros((28,8))
-        rg.gameended = False
-        rg.score = 0
-        rg.metrospeed = 5
-        self.state = 0
-        return self.state
-
-    def step(self, action):
-
-        if action[0] == 0:
-            rg.addMetroToLine(action[1])
-        if action[0] == 1:
-            rg.addToMetroLine(action[1], action[2])
-        if action[0] == 2:
-            rg.removeLastPointFromMetroLine(action[1])
-
-        reward = rg.score
-        done = rg.gameended
-        return self.state, reward, done, False, {}
-
-    def close(self):
-        pass
+plt.ion()
 
 device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
 
@@ -90,10 +60,11 @@ TAU = 0.005
 LR = 1e-4
 
 #Action space - 1 descrete action to determine what move type to execute, then three integers determining what args are sent to that move. If ints are not needed, they are disregarded
-n_actions = 4
+n_actions = env.action_space.n
 
 #State space - 30x30 array for the stationtypes, 30x30x6 array for the passanger counts, 7x8x2 array representing the routes, and a 28x8 array representing the metros
-n_observations = 6636
+state, info = env.reset()
+n_observations = len(state)
 
 policy_net = DQN(n_observations, n_actions).to(device)
 target_net = DQN(n_observations, n_actions).to(device)
@@ -103,3 +74,43 @@ optimizer = optim.AdamW(policy_net.parameters(), lr=LR, amsgrad=True)
 memory = ReplayMemory(10000)
 
 steps_done = 0
+
+def select_action(state):
+    global steps_done
+    sample = random.random()
+    eps_threshold = EPS_END + (EPS_START - EPS_END) * \
+        math.exp(-1. * steps_done / EPS_DECAY)
+    steps_done += 1
+    if sample > eps_threshold:
+        with torch.no_grad():
+            return policy_net(state).max(1).indices.view(1, 1)
+    else:
+        return torch.tensor([[env.action_space.sample()]], device=device, dtype=torch.long)
+    
+episode_durations = []
+
+
+def plot_durations(show_result=False):
+    plt.figure(1)
+    durations_t = torch.tensor(episode_durations, dtype=torch.float)
+    if show_result:
+        plt.title('Result')
+    else:
+        plt.clf()
+        plt.title('Training...')
+    plt.xlabel('Episode')
+    plt.ylabel('Duration')
+    plt.plot(durations_t.numpy())
+    # Take 100 episode averages and plot them too
+    if len(durations_t) >= 100:
+        means = durations_t.unfold(0, 100, 1).mean(1).view(-1)
+        means = torch.cat((torch.zeros(99), means))
+        plt.plot(means.numpy())
+
+    plt.pause(0.001)  # pause a bit so that plots are updated
+    if is_ipython:
+        if not show_result:
+            display.display(plt.gcf())
+            display.clear_output(wait=True)
+        else:
+            display.display(plt.gcf())
