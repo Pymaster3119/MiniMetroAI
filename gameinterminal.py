@@ -1,14 +1,19 @@
 from rungame import *
 import matplotlib.pyplot as plt
 import matplotlib.ticker as plticker
-axs = None
+axes = None
 while True:
     updateGame(10)
     print(score)
-    if axs != None:
-        for i in axs:
-            plt.clear(axs)
-    fig, axs = plt.subplots(1, 4, figsize=(10, 5)) 
+    if axes != None:
+        for i in axes:
+            plt.clear(axes)
+    else:
+        fig, axes = plt.subplots(2, 2, figsize=(10, 5)) 
+    axs = []
+    for i in range(2):
+        for j in range(2):
+            axs.append(axes[i][j])
     axs[0].imshow(stationtypes, cmap='gray')
     axs[0].xaxis.set_major_locator(plticker.MultipleLocator(base=1.0))
     axs[0].yaxis.set_major_locator(plticker.MultipleLocator(base=1.0))
@@ -33,7 +38,7 @@ while True:
             rect = plt.Rectangle(pos - 0.5, 3, 1, color="blue") 
             axs[2].add_patch(rect)
     
-    axs[4].text(0,0,f'Score: {score}')
+    axs[3].text(0,0,f'Score: {score}')
     plt.show(block=False)
 
     line = int(input("What line"))
