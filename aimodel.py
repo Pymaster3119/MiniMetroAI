@@ -32,8 +32,6 @@ class CustomEnv(gym.Env):
         return self.state
 
     def step(self, action):
-        reward = 0
-        done = False
 
         if action[0] == 0:
             rg.addMetroToLine(action[1])
@@ -42,10 +40,8 @@ class CustomEnv(gym.Env):
         if action[0] == 2:
             rg.removeLastPointFromMetroLine(action[1])
 
-        if rg.np.sum(self.state) > 10:
-            done = True
-            reward = 1
-
+        reward = rg.score
+        done = rg.gameended
         return self.state, reward, done, False, {}
 
     def close(self):
