@@ -115,43 +115,52 @@ def lengthAlongLine(line):
 
     return length
 
-def addToMetroLine(line, stopindex):
-    global stationtypes, connections, routes, timer, stationspawntimer, passangerspawntimer, gameended, score
-    #Check if they are valid, and if they aren't then take off some score
-    if stationtypes[stopindex[0]][stopindex[1]] == 0:
-        score -= 10
-        return
+def addToMetroLine(line, stopindexx, stopindexy):
+    try:
+        global stationtypes, connections, routes, timer, stationspawntimer, passangerspawntimer, gameended, score
+        stopindex = (stopindexx, stopindexy)
+        #Check if they are valid, and if they aren't then take off some score
+        if stationtypes[stopindex[0]][stopindex[1]] == 0:
+            score -= 10
+            return
 
-    index = 0
-    for i in range(routes.shape[1]):
-        if routes[line, i, 0] != 0 and routes[line, i, 1] != 0:
-            index = i
-    if not (routes[line][0][0] == 0 and routes[line][0][1] == 0):
+        index = 0
+        for i in range(routes.shape[1]):
+            if routes[line, i, 0] != 0 and routes[line, i, 1] != 0:
+                index = i
+        if not (routes[line][0][0] == 0 and routes[line][0][1] == 0):
+            score -= 10
+            return
+        
+        #Add point
+        routes[line][index + 1][0] = stopindex[0]
+        routes[line][index + 1][1] = stopindex[1]
+    except IndexError:
         score -= 10
-        return
-    
-    #Add point
-    routes[line][index + 1][0] = stopindex[0]
-    routes[line][index + 1][1] = stopindex[1]
 
 def addMetroToLine(line):
-    global stationtypes, connections, routes, timer, stationspawntimer, passangerspawntimer, gameended, score
-    index = -1
-    for i in range(metros.shape[0]):
-        if metros[i][0]==0 and metros[i][1]==0:
-            index = i
-    if index == -1:
+    try:
+        global stationtypes, connections, routes, timer, stationspawntimer, passangerspawntimer, gameended, score
+        index = -1
+        for i in range(metros.shape[0]):
+            if metros[i][0]==0 and metros[i][1]==0:
+                index = i
+        if index == -1:
+            score -= 10
+        metros[index][0] = line
+    except:
         score -= 10
-    metros[index][0] = line
 
 def removeLastPointFromMetroLine(line):
-    global stationtypes, connections, routes, timer, stationspawntimer, passangerspawntimer, gameended, score
-    index = -1
-    for i in range(routes.shape[1]):
-        if routes[line, i, 0] != 0 and routes[line, i, 1] != 0:
-            index = i
-    if index == -1:
-        return
-    routes[line, index, 0]=0
-    routes[line, index, 1]=0
-    
+    try:
+        global stationtypes, connections, routes, timer, stationspawntimer, passangerspawntimer, gameended, score
+        index = -1
+        for i in range(routes.shape[1]):
+            if routes[line, i, 0] != 0 and routes[line, i, 1] != 0:
+                index = i
+        if index == -1:
+            return
+        routes[line, index, 0]=0
+        routes[line, index, 1]=0
+    except:
+        score -= 10

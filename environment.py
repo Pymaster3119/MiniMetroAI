@@ -4,9 +4,8 @@ from gymnasium import spaces
 class Env(gym.Env):
     def __init__(self):
         super(Env, self).__init__()
-        self.action_space = spaces.Box(low=rg.np.array([-2] * 6636), high=rg.np.array([10] * 6636), dtype=rg.np.int8)
-        self.observation_space = spaces.Box(low=-1, high=10, shape=(6636,), dtype=rg.np.int8)
-
+        self.action_space = spaces.Box(low=rg.np.array([-2] * 6636), high=rg.np.array([10] * 6636), dtype=rg.np.int64)
+        self.observation_space = spaces.Box(low=-1, high=10, shape=(6636,), dtype=rg.np.int64)
         self.state = None
 
     def reset(self, seed = None, options = None):
@@ -25,11 +24,11 @@ class Env(gym.Env):
         return (self.state, {})
 
     def step(self, action):
-        
+        print(action)
         if action[0] == 0:
             rg.addMetroToLine(action[1])
         if action[0] == 1:
-            rg.addToMetroLine(action[1], action[2])
+            rg.addToMetroLine(action[1], action[2], action[3])
         if action[0] == 2:
             rg.removeLastPointFromMetroLine(action[1])
 
@@ -56,4 +55,4 @@ class Env(gym.Env):
         for i in rg.metros:
             for j in i:
                 state.append(j)
-        return rg.np.array(state, dtype=rg.np.int8)
+        return rg.np.array(state, dtype=rg.np.int64)

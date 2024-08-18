@@ -44,7 +44,7 @@ class DQN(nn.Module):
     def __init__(self, n_observations, n_actions, layers, width):
         super(DQN, self).__init__()
         self.startlayer = nn.Linear(n_observations, width)
-        self.layers = []
+        self.layers = nn.ModuleList()
         for i in range(1, layers):
             self.layers.append(nn.Linear(width, width))
         self.layers.append(nn.Linear(width, n_actions))
@@ -87,7 +87,7 @@ def select_action(state):
     steps_done += 1
     if sample > eps_threshold:
         with torch.no_grad():
-            return policy_net(state).max(1).indices.view(1, 1)
+            return policy_net(state).view(1, -1).to(device)
     else:
         return torch.tensor([[env.action_space.sample()]], device=device, dtype=torch.long)
     
@@ -120,7 +120,7 @@ def optimize_model():
     non_final_mask = torch.tensor(tuple(map(lambda s: s is not None, batch.next_state)), device=device, dtype=torch.bool)
     non_final_next_states = torch.cat([s for s in batch.next_state if s is not None])
     state_batch = torch.cat(batch.state)
-    action_batch = torch.cat(batch.action)
+    action_batch = torch.cat([a.view(-1, 4, 1) for a in batch.action])
     reward_batch = torch.cat(batch.reward)
 
     state_action_values = policy_net(state_batch).gather(1, action_batch)
@@ -139,13 +139,13 @@ def optimize_model():
     optimizer.step()
 
 num_episodes = 600
-for i_episode in tqdm(range(num_episodes), description = ""):
+for i_episode in tqdm.tqdm(range(num_episodes), desc = "Train AI model"):
     # Initialize the environment and get its state
     state, info = env.reset()
     state = torch.tensor(state, dtype=torch.float32, device=device).unsqueeze(0)
     for t in count():
-        action = select_action(state)
-        observation, reward, terminated, truncated, _ = env.step(action.item())
+        action = select_action(state).to(device=device)
+        observation, reward, terminated, truncated, _ = env.step(action.cpu().numpy().flatten())
         reward = torch.tensor([reward], device=device)
         done = terminated or truncated
 
