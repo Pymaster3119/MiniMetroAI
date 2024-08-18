@@ -4,12 +4,12 @@ from gymnasium import spaces
 class Env(gym.Env):
     def __init__(self):
         super(Env, self).__init__()
-        self.action_space = spaces.Discrete(3)
-        self.observation_space = spaces.Box(low=0, high=1, shape=(3,), dtype=rg.np.float32)
+        self.action_space = spaces.Box(low=-1, high=40, shape=(4,), dtype=rg.np.int8)
+        self.observation_space = spaces.Box(low=-1, high=10, shape=(6636,), dtype=rg.np.int8)
 
         self.state = None
 
-    def reset(self):
+    def reset(self, seed = None, options = None):
         rg.stationtypes = rg.np.zeros((30, 30))
         rg.connections = rg.np.zeros((30,30,6))
         rg.routes = rg.np.zeros((7,8,2))
@@ -21,11 +21,11 @@ class Env(gym.Env):
         rg.gameended = False
         rg.score = 0
         rg.metrospeed = 5
-        self.state = gatherstate()
-        return self.state
+        self.state = self.gatherstate()
+        return (self.state, {})
 
     def step(self, action):
-
+        
         if action[0] == 0:
             rg.addMetroToLine(action[1])
         if action[0] == 1:
@@ -41,4 +41,19 @@ class Env(gym.Env):
         pass
 
     def gatherstate(self):
-        pass
+        state = []
+        for i in rg.stationtypes:
+            for j in i:
+                state.append(j)
+        for i in rg.connections:
+            for j in i:
+                for k in j:
+                    state.append(k)
+        for i in rg.routes:
+            for j in i:
+                for k in j:
+                    state.append(k)
+        for i in rg.metros:
+            for j in i:
+                state.append(j)
+        return rg.np.array(state, dtype=rg.np.int8)
