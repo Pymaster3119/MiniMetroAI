@@ -63,7 +63,7 @@ TAU = 0.005
 LR = 1e-4
 
 #Action space - 1 descrete action to determine what move type to execute, then three integers determining what args are sent to that move. If ints are not needed, they are disregarded
-n_actions = env.action_space.n
+n_actions = env.action_space.shape[0]
 
 #State space - 30x30 array for the stationtypes, 30x30x6 array for the passanger counts, 7x8x2 array representing the routes, and a 28x8 array representing the metros
 state, info = env.reset()
