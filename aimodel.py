@@ -110,7 +110,6 @@ def plot_durations(show_result=False):
         means = durations_t.unfold(0, 100, 1).mean(1).view(-1)
         means = torch.cat((torch.zeros(99), means))
         plt.plot(means.numpy())
-
 def optimize_model():
     if len(memory) < BATCH_SIZE:
         return
@@ -120,7 +119,10 @@ def optimize_model():
     non_final_mask = torch.tensor(tuple(map(lambda s: s is not None, batch.next_state)), device=device, dtype=torch.bool)
     non_final_next_states = torch.cat([s for s in batch.next_state if s is not None])
     state_batch = torch.cat(batch.state)
-    action_batch = torch.cat([a.view(-1, 4, 1) for a in batch.action])
+    
+    print(batch.action)
+    print(batch.action.shape)
+    action_batch = torch.cat(batch.action).view(-1, 1).long().to(device)
     reward_batch = torch.cat(batch.reward)
 
     state_action_values = policy_net(state_batch).gather(1, action_batch)
