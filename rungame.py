@@ -20,7 +20,6 @@ for i in range(metros.shape[0]):
     metros[i][0] = -1
 
 def updateGame(timestamp):
-    print("Game Step Ran")
     global stationtypes, connections, routes, timer, stationspawntimer, passangerspawntimer, gameended, score, metrospeed
     if gameended:
         return
@@ -46,7 +45,6 @@ def updateGame(timestamp):
                     assigned = True
                     break
             if not assigned:
-                print("GAME OVER")
                 gameended = True
 
     #Deal with the metros

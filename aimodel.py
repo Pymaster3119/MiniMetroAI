@@ -37,8 +37,14 @@ class Agent:
         self.batch_size = 64
         self.train_start = 1000
         self.device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
-        self.model = DQN(state_size, 3).to(self.device) 
-        self.optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate)
+        self.model_0 = DQN(state_size, 1).to(self.device)
+        self.model_1 = DQN(state_size, 1).to(self.device)
+        self.model_2 = DQN(state_size, 1).to(self.device)
+        
+        self.optimizer_0 = optim.Adam(self.model_0.parameters(), lr=self.learning_rate)
+        self.optimizer_1 = optim.Adam(self.model_1.parameters(), lr=self.learning_rate)
+        self.optimizer_2 = optim.Adam(self.model_2.parameters(), lr=self.learning_rate)
+        
         self.criterion = nn.MSELoss()
 
     def remember(self, state, action, reward, next_state, done):
@@ -46,10 +52,18 @@ class Agent:
     
     def act(self, state):
         if np.random.rand() <= self.epsilon:
-            return [random.randint(0, 2), random.randint(0, 6635), random.randint(0, 6635), random.randint(0, 6635)]
+            action_type = random.randint(0, 2)
+            if action_type == 0:
+                return [0, random.randint(0, 6635)]
+            elif action_type == 1:
+                return [1, random.randint(0, 6635), random.randint(0, 6635), random.randint(0, 6635)]
+            else:
+                return [2, random.randint(0, 6635)]
         state = torch.FloatTensor(state).to(self.device)
-        act_values = self.model(state)
-        action_type = torch.argmax(act_values).item()
+        q_value_0 = self.model_0(state).item()
+        q_value_1 = self.model_1(state).item()
+        q_value_2 = self.model_2(state).item()
+        action_type = np.argmax([q_value_0, q_value_1, q_value_2])
         if action_type == 0:
             return [0, random.randint(0, 6635)]
         elif action_type == 1:
@@ -65,14 +79,36 @@ class Agent:
             target = reward
             if not done:
                 next_state = torch.FloatTensor(next_state).to(self.device)
-                target = reward + self.gamma * torch.max(self.model(next_state)).item()
+                if action[0] == 0:
+                    target = reward + self.gamma * self.model_0(next_state).item()
+                elif action[0] == 1:
+                    target = reward + self.gamma * self.model_1(next_state).item()
+                elif action[0] == 2:
+                    target = reward + self.gamma * self.model_2(next_state).item()
+
             state = torch.FloatTensor(state).to(self.device)
-            target_f = self.model(state)
-            target_f[action[0]] = target
-            self.optimizer.zero_grad()
-            loss = self.criterion(target_f, self.model(state))
-            loss.backward()
-            self.optimizer.step()
+            target = torch.tensor([[target]], dtype=torch.float32, device=self.device)  # Ensure target is float32
+            if action[0] == 0:
+                target_f = self.model_0(state)
+                self.optimizer_0.zero_grad()
+                loss = self.criterion(target_f, target)
+                loss.backward()
+                self.optimizer_0.step()
+            elif action[0] == 1:
+                target_f = self.model_1(state)
+                self.optimizer_1.zero_grad()
+                loss = self.criterion(target_f, target)
+                loss.backward()
+                self.optimizer_1.step()
+            elif action[0] == 2:
+                target_f = self.model_2(state)
+                self.optimizer_2.zero_grad()
+                loss = self.criterion(target_f, target)
+                loss.backward()
+                self.optimizer_2.step()
+
+        if self.epsilon > self.epsilon_min:
+            self.epsilon *= self.epsilon_decay
 
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
