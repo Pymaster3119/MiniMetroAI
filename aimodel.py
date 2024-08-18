@@ -12,6 +12,7 @@ import math
 import matplotlib
 import matplotlib.pyplot as plt
 from itertools import count
+import tqdm
 
 register(id='MiniMetro-v0', entry_point='environment:Env')
 env = gym.make('MiniMetro-v0')
@@ -138,7 +139,7 @@ def optimize_model():
     optimizer.step()
 
 num_episodes = 600
-for i_episode in range(num_episodes):
+for i_episode in tqdm(range(num_episodes), description = ""):
     # Initialize the environment and get its state
     state, info = env.reset()
     state = torch.tensor(state, dtype=torch.float32, device=device).unsqueeze(0)
