@@ -20,6 +20,7 @@ for i in range(metros.shape[0]):
     metros[i][0] = -1
 
 def updateGame(timestamp):
+    print("Game Step Ran")
     global stationtypes, connections, routes, timer, stationspawntimer, passangerspawntimer, gameended, score, metrospeed
     if gameended:
         return
@@ -117,6 +118,8 @@ def lengthAlongLine(line):
 
 def addToMetroLine(line, stopindexx, stopindexy):
     try:
+        if line >= 7:
+            raise IndexError
         global stationtypes, connections, routes, timer, stationspawntimer, passangerspawntimer, gameended, score
         stopindex = (stopindexx, stopindexy)
         #Check if they are valid, and if they aren't then take off some score
@@ -140,6 +143,8 @@ def addToMetroLine(line, stopindexx, stopindexy):
 
 def addMetroToLine(line):
     try:
+        if line >= 7:
+            raise IndexError
         global stationtypes, connections, routes, timer, stationspawntimer, passangerspawntimer, gameended, score
         index = -1
         for i in range(metros.shape[0]):
@@ -153,6 +158,8 @@ def addMetroToLine(line):
 
 def removeLastPointFromMetroLine(line):
     try:
+        if line >= 7:
+            raise IndexError
         global stationtypes, connections, routes, timer, stationspawntimer, passangerspawntimer, gameended, score
         index = -1
         for i in range(routes.shape[1]):

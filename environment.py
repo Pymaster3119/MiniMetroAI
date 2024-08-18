@@ -24,6 +24,7 @@ class Env(gym.Env):
         return (self.state, {})
 
     def step(self, action):
+        rg.updateGame(0.1)
         if action[0] == 0:
             rg.addMetroToLine(action[1])
         if action[0] == 1:
