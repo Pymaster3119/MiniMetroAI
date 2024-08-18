@@ -62,7 +62,6 @@ def updateGame(timestamp):
                 pos = findPositionOfMetro(metro)
                 for j in range(8):
                     station = routes[int(route)][int(j)]
-                    print(station, pos)
                     if pos[0] != 0 and pos[1] != 0 and math.sqrt((station[0]-pos[0])**2 + (station[1]-pos[1])**2) < 1:
                         #Unload passangers
                         stationtype = stationtypes[station[0]][station[1]]
