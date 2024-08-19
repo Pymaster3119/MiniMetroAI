@@ -137,6 +137,11 @@ with open('output.txt', 'w') as txt:
                 if reward > maxscores:
                     maxscores = reward
                     episodewithmaxscore = e
+                    print(f"High score of {reward} points!")
+                if eplen > longestepisode:
+                    longestepisode = eplen
+                    longestepisodenum = e
+                    print(f"Longest episode so far with length {eplen}!")
                 break
         
         agent.replay()
