@@ -4,7 +4,7 @@ from gymnasium import spaces
 class Env(gym.Env):
     def __init__(self):
         super(Env, self).__init__()
-        self.action_space = spaces.Box(low=rg.np.array([-2] * 3), high=rg.np.array([31] * 3), dtype=rg.np.int64)
+        self.action_space = spaces.Box(low=rg.np.array([-2] * 4), high=rg.np.array([31] * 4), dtype=rg.np.int64)
         self.observation_space = spaces.Box(low=-1, high=10, shape=(6636,), dtype=rg.np.int64)
         self.state = None
 

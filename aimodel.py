@@ -36,7 +36,7 @@ class Agent:
         self.epsilon_min = 0.01
         self.epsilon_decay = 0.9995
         self.learning_rate = 0.001
-        self.batch_size = 64
+        self.batch_size = 100
         self.train_start = 1000
         self.device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
         self.model = DQN(state_size, action_size).to(self.device)  # Single model with 3 output actions
@@ -51,17 +51,7 @@ class Agent:
             return [random.randint(0, 2), random.randint(0, 10), random.randint(0, 31), random.randint(0, 31)]
         state = torch.FloatTensor(state).to(self.device)
         act_values = self.model(state)
-        print(act_values[0][1])
-        print(act_values.size())
-        print(self.action_size)
-        action_type = torch.argmax(act_values).item()
-        print(action_type)
-        if action_type == 0:
-            return [0, random.randint(0, 6635)]
-        elif action_type == 1:
-            return [1, random.randint(0, 6635), random.randint(0, 6635), random.randint(0, 6635)]
-        else:
-            return [2, random.randint(0, 6635)]
+        return [round(act_values[0][0].item()), round(act_values[0][1].item()), round(act_values[0][2].item()), act_values[0][3]]
 
     def replay(self):
         if len(self.memory) < self.train_start:
@@ -101,6 +91,8 @@ agent = Agent(state_size, action_size)
 episodes = 90_000
 maxscores = -(10**10)
 episodewithmaxscore = -1
+longestepisode = -(10**10)
+longestepisodenum = -1
 
 scores = []
 epsilons = []
