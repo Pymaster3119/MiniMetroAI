@@ -11,8 +11,8 @@ timer = 0
 stationspawntimer = 0
 passangerspawntimer = 0
 spawnweights = [0.7, 0.15, 0.1, 0.05]
-#Metros - 28 metros, for each metro, 0 represents the route number (-1 is invalid), 1 reprersents distance along route, and 2-7 represents the passangers
-metros = np.zeros((28,8))
+#Metros - 7 metros, for each metro, 0 represents the route number (-1 is invalid), 1 reprersents distance along route, and 2-7 represents the passangers
+metros = np.zeros((7,8))
 gameended = False
 score = 0
 metrospeed = 5

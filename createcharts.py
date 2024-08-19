@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
+import threading
 import aimodel as ai
 # Set up the figure and multiple subplots
 fig, axs = plt.subplots(5, 1)
@@ -29,7 +30,7 @@ def update(frame):
     if len(highscores) < len(x_data):
         for i in range(len(x_data) - len(highscores)):
             highscores.append(ai.maxscores)
-            highlengths.append(ai.longestepisode)
+            highlengths.append(ai.longestepisode)c
     line1.set_data(x_data, ai.episodelengths)
     line2.set_data(x_data, ai.scores)
     line3.set_data(x_data, ai.epsilons)
@@ -53,7 +54,7 @@ def start():
     ai.main()
     
     
-start()
+threading.Thread(target=start).start()
 
 # Create the animation
 ani = animation.FuncAnimation(fig, update, frames=np.linspace(0, 10, 500), init_func=init, blit=False)
