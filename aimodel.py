@@ -7,7 +7,6 @@ from collections import deque
 import gymnasium as gym
 from gymnasium.envs.registration import register
 import tqdm
-import matplotlib.pyplot as plt
 import atexit
 register(
     id='MiniMetro-v0',
@@ -100,50 +99,41 @@ epsilons = []
 episodelengths = []
 def exit():
     agent.save("model.pth")
-    plt.plot([i for i in range(episodes)], scores)
-    plt.title("Score")
-    plt.show()
-
-    plt.plot([i for i in range(episodes)], epsilons)
-    plt.title("Epsilon")
-    plt.show()
-
-    plt.plot([i for i in range(episodes)], episodelengths)
-    plt.title("Episode Lengths")
-    plt.show()
 
     print(f"Maximum Score: {maxscores} in episode {episodewithmaxscore}")
 
 atexit.register(exit)
-with open('output.txt', 'w') as txt:
-    for e in tqdm.tqdm(range(episodes)):
-        state = env.reset()[0]
-        state = np.reshape(state, [1, state_size])
-        done = False
-        time = 0
-        eplen = 0
-        while not done:
-            action = agent.act(state)
-            next_state, reward, done, _, _ = env.step(action)
-            next_state = np.reshape(next_state, [1, state_size])
-            agent.remember(state, action, reward, next_state, done)
-            state = next_state
-            time += 1
-            eplen += 1
-            if done:
-                txt.write(f"episode: {e}/{episodes}, score: {reward}, e: {agent.epsilon:.2}\n")
-                scores.append(reward)
-                epsilons.append(agent.epsilon)
-                episodelengths.append(eplen)
-                if reward > maxscores:
-                    maxscores = reward
-                    episodewithmaxscore = e
-                    print(f"High score of {reward} points!")
-                if eplen > longestepisode:
-                    longestepisode = eplen
-                    longestepisodenum = e
-                    print(f"Longest episode so far with length {eplen}!")
-                break
-        
-        agent.replay()
-exit()
+def main():
+    global maxscores, episodewithmaxscore, longestepisode, longestepisodenum
+    with open('output.txt', 'w') as txt:
+        for e in tqdm.tqdm(range(episodes)):
+            state = env.reset()[0]
+            state = np.reshape(state, [1, state_size])
+            done = False
+            time = 0
+            eplen = 0
+            while not done:
+                action = agent.act(state)
+                next_state, reward, done, _, _ = env.step(action)
+                next_state = np.reshape(next_state, [1, state_size])
+                agent.remember(state, action, reward, next_state, done)
+                state = next_state
+                time += 1
+                eplen += 1
+                if done:
+                    txt.write(f"episode: {e}/{episodes}, score: {reward}, e: {agent.epsilon:.2}\n")
+                    scores.append(reward)
+                    epsilons.append(agent.epsilon)
+                    episodelengths.append(eplen)
+                    if reward > maxscores:
+                        maxscores = reward
+                        episodewithmaxscore = e
+                        print(f"High score of {reward} points!")
+                    if eplen > longestepisode:
+                        longestepisode = eplen
+                        longestepisodenum = e
+                        print(f"Longest episode so far with length {eplen}!")
+                    break
+            
+            agent.replay()
+    exit()
