@@ -15,17 +15,12 @@ register(
 class DQN(nn.Module):
     def __init__(self, state_size, action_size):
         super(DQN, self).__init__()
-        # First convolutional layer
         self.conv1 = nn.Conv1d(in_channels=1, out_channels=16, kernel_size=5, stride=2) 
-        # Second convolutional layer
         self.conv2 = nn.Conv1d(in_channels=16, out_channels=32, kernel_size=5, stride=2) 
 
-        # Calculate the output size after convolutions
-        conv_output_size = (state_size - 4) // 2  # Output size after first conv
-        conv_output_size = (conv_output_size - 4) // 2  # Output size after second conv
-        conv_output_size *= 32  # Number of channels from the last conv layer
-
-        # Define fully connected layers
+        conv_output_size = (state_size - 4) // 2
+        conv_output_size = (conv_output_size - 4) // 2
+        conv_output_size *= 32
         layersizes = [conv_output_size, 32, 32, action_size]
         layers = []
         for i in range(1, len(layersizes)):
@@ -33,10 +28,10 @@ class DQN(nn.Module):
         self.layers = nn.ModuleList(layers)
     
     def forward(self, x):
-        x = x.view(x.size(0), 1, -1)  # Reshape for Conv1D
-        x = torch.relu(self.conv1(x))  # Apply first Conv1D layer
-        x = torch.relu(self.conv2(x))  # Apply second Conv1D layer
-        x = x.view(x.size(0), -1)  # Flatten for fully connected layers
+        x = x.view(x.size(0), 1, -1)
+        x = torch.relu(self.conv1(x))
+        x = torch.relu(self.conv2(x))
+        x = x.view(x.size(0), -1)
         for i in self.layers:
             x = torch.relu(i(x))
         return x
