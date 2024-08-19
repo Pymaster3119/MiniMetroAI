@@ -51,7 +51,11 @@ class Agent:
             return [random.randint(0, 2), random.randint(0, 10), random.randint(0, 31), random.randint(0, 31)]
         state = torch.FloatTensor(state).to(self.device)
         act_values = self.model(state)
+        print(act_values[0][1])
+        print(act_values.size())
+        print(self.action_size)
         action_type = torch.argmax(act_values).item()
+        print(action_type)
         if action_type == 0:
             return [0, random.randint(0, 6635)]
         elif action_type == 1:
@@ -71,14 +75,10 @@ class Agent:
 
             state = torch.FloatTensor(state).to(self.device)
             target_f = self.model(state)
-            target_f = target_f.clone()  # Avoid modifying the model's output in-place
-
-            # Ensure target_f[action[0]] is within bounds and assign the target
+            target_f = target_f.clone()
             if action[0] < target_f.size(0):
                 target_f[action[0]] = target
-            
-            # Reshape target_f to match the input size for the loss function
-            target_f = target_f.view(1, -1)  # Flatten to a 2D tensor with shape (1, action_size)
+            target_f = target_f.view(1, -1)
 
             self.optimizer.zero_grad()
             loss = self.criterion(self.model(state), target_f)
@@ -98,10 +98,13 @@ state_size = env.observation_space.shape[0]
 action_size = env.action_space.shape[0]
 agent = Agent(state_size, action_size)
 
-episodes = 10000
+episodes = 90_000
+maxscores = -(10**10)
+episodewithmaxscore = -1
 
 scores = []
 epsilons = []
+episodelengths = []
 def exit():
     agent.save("model.pth")
     plt.plot([i for i in range(episodes)], scores)
@@ -112,6 +115,12 @@ def exit():
     plt.title("Epsilon")
     plt.show()
 
+    plt.plot([i for i in range(episodes)], episodelengths)
+    plt.title("Episode Lengths")
+    plt.show()
+
+    print(f"Maximum Score: {maxscores} in episode {episodewithmaxscore}")
+
 atexit.register(exit)
 with open('output.txt', 'w') as txt:
     for e in tqdm.tqdm(range(episodes)):
@@ -119,7 +128,7 @@ with open('output.txt', 'w') as txt:
         state = np.reshape(state, [1, state_size])
         done = False
         time = 0
-
+        eplen = 0
         while not done:
             action = agent.act(state)
             next_state, reward, done, _, _ = env.step(action)
@@ -127,11 +136,15 @@ with open('output.txt', 'w') as txt:
             agent.remember(state, action, reward, next_state, done)
             state = next_state
             time += 1
-
+            eplen += 1
             if done:
                 txt.write(f"episode: {e}/{episodes}, score: {reward}, e: {agent.epsilon:.2}\n")
                 scores.append(reward)
                 epsilons.append(agent.epsilon)
+                episodelengths.append(eplen)
+                if reward > maxscores:
+                    maxscores = reward
+                    episodewithmaxscore = e
                 break
         
         agent.replay()
