@@ -16,14 +16,16 @@ register(
 class DQN(nn.Module):
     def __init__(self, state_size, action_size):
         super(DQN, self).__init__()
-        self.fc1 = nn.Linear(state_size, 128)
-        self.fc2 = nn.Linear(128, 128)
-        self.fc3 = nn.Linear(128, action_size)
+        layersizes = [state_size, 1024, 2048, 2048, 2048, 128, action_size]
+        layers = []
+        for i in range(1, len(layersizes)):
+            layers.append(nn.Linear(layersizes[i-1], layersizes[i]))
+        self.layers = nn.ModuleList(layers)
     
     def forward(self, x):
-        x = torch.relu(self.fc1(x))
-        x = torch.relu(self.fc2(x))
-        return self.fc3(x)
+        for i in self.layers:
+            x = torch.relu(i(x))
+        return x
 
 class Agent:
     def __init__(self, state_size, action_size):
