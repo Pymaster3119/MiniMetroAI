@@ -51,7 +51,8 @@ class Agent:
             return [random.randint(0, 2), random.randint(0, 10), random.randint(0, 31), random.randint(0, 31)]
         state = torch.FloatTensor(state).to(self.device)
         act_values = self.model(state)
-        return [round(act_values[0][0].item()), round(act_values[0][1].item()), round(act_values[0][2].item()), act_values[0][3]]
+        act_values = torch.clamp(act_values, 0, 31)
+        return [round(act_values[0][0].item()), round(act_values[0][1].item()), round(act_values[0][2].item()), round(act_values[0][3].item())]
 
     def replay(self):
         if len(self.memory) < self.train_start:
@@ -66,8 +67,8 @@ class Agent:
             state = torch.FloatTensor(state).to(self.device)
             target_f = self.model(state)
             target_f = target_f.clone()
-            if action[0] < target_f.size(0):
-                target_f[action[0]] = target
+            if action[0] < target_f.size(1):
+                target_f[0][action[0]] = target
             target_f = target_f.view(1, -1)
 
             self.optimizer.zero_grad()
