@@ -7,6 +7,7 @@ from collections import deque
 import gymnasium as gym
 from gymnasium.envs.registration import register
 import tqdm
+
 register(
     id='MiniMetro-v0',
     entry_point= 'environment:Env',
@@ -21,7 +22,7 @@ class DQN(nn.Module):
         conv_output_size = (state_size - 4) // 2
         conv_output_size = (conv_output_size - 4) // 2
         conv_output_size *= 32
-        layersizes = [conv_output_size, 32, 32, action_size]
+        layersizes = [conv_output_size, 64, 64, action_size]
         layers = []
         for i in range(1, len(layersizes)):
             layers.append(nn.Linear(layersizes[i-1], layersizes[i]))
@@ -36,6 +37,7 @@ class DQN(nn.Module):
             x = torch.relu(i(x))
         return x
 
+
 class Agent:
     def __init__(self, state_size, action_size):
         self.state_size = state_size
@@ -49,7 +51,7 @@ class Agent:
         self.batch_size = 100
         self.train_start = 1000
         self.device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
-        self.model = DQN(state_size, action_size).to(self.device)  # Single model with 3 output actions
+        self.model = DQN(state_size, action_size).to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate)
         self.criterion = nn.MSELoss()
 
@@ -59,39 +61,45 @@ class Agent:
     def act(self, state):
         if np.random.rand() <= self.epsilon:
             return [random.randint(0, 2), random.randint(0, 10), random.randint(0, 31), random.randint(0, 31)]
-        state_tensor = torch.FloatTensor(state).to(self.device, non_blocking=True)
         
-        # Forward pass through the model
-        act_values = self.model(state_tensor)
+        state_array = np.array(state)
+        state_tensor = torch.FloatTensor(state_array).to(self.device)
+        with torch.no_grad():
+            act_values = self.model(state_tensor)
         
-        # Clamp the output and return the rounded actions
-        act_values = torch.clamp(act_values, 0, 31)
-        return [round(act_values[0][0].item()), round(act_values[0][1].item()), round(act_values[0][2].item()), round(act_values[0][3].item())]
+        act_values = torch.clamp(act_values, 0, 31).round().int()
+        return act_values.cpu().numpy().flatten().tolist()
 
     def replay(self):
         if len(self.memory) < self.train_start:
             return
         minibatch = random.sample(self.memory, min(len(self.memory), self.batch_size))
+        states, targets_f = [], []
         for state, action, reward, next_state, done in minibatch:
-            target = reward
-            if not done:
-                next_state = torch.FloatTensor(next_state).to(self.device)
-                target = reward + self.gamma * torch.max(self.model(next_state)).item()
-
-            state = torch.FloatTensor(state).to(self.device)
-            target_f = self.model(state)
-            target_f = target_f.clone()
+            state_array = np.array(state)
+            next_state_array = np.array(next_state)
+            state_tensor = torch.FloatTensor(state_array).to(self.device)
+            next_state_tensor = torch.FloatTensor(next_state_array).to(self.device)
+            target = reward if done else reward + self.gamma * torch.max(self.model(next_state_tensor)).item()
+            target_f = self.model(state_tensor)
+            target_f = target_f.clone().detach()
             if action[0] < target_f.size(1):
                 target_f[0][action[0]] = target
-            target_f = target_f.view(1, -1)
-
-            self.optimizer.zero_grad()
-            loss = self.criterion(self.model(state), target_f)
-            loss.backward()
-            self.optimizer.step()
+            states.append(state_tensor.unsqueeze(0))
+            targets_f.append(target_f.unsqueeze(0))
+        states = torch.cat(states)
+        targets_f = torch.cat(targets_f)
+        if targets_f.size(1) != states.size(1):
+            targets_f = targets_f.view_as(states)
+        self.optimizer.zero_grad()
+        outputs = self.model(states)
+        loss = self.criterion(outputs, targets_f)
+        loss.backward()
+        self.optimizer.step()
 
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
+
     def load(self, name):
         self.model.load_state_dict(torch.load(name))
 
@@ -112,25 +120,21 @@ longestepisodenum = -1
 scores = []
 epsilons = []
 episodelengths = []
-def exit():
-    agent.save("model.pth")
-
-    print(f"Maximum Score: {maxscores} in episode {episodewithmaxscore}")
 
 for e in tqdm.tqdm(range(episodes)):
     state = env.reset()[0]
-    state = np.reshape(state, [1, state_size])
     done = False
     time = 0
     eplen = 0
+
     while not done:
-        action = agent.act(state)
+        action = agent.act([state])
         next_state, reward, done, _, _ = env.step(action)
-        next_state = np.reshape(next_state, [1, state_size])
-        agent.remember(state, action, reward, next_state, done)
+        agent.remember([state], action, reward, [next_state], done)
         state = next_state
         time += 1
         eplen += 1
+
         if done:
             scores.append(reward)
             epsilons.append(agent.epsilon)
@@ -144,6 +148,8 @@ for e in tqdm.tqdm(range(episodes)):
                 longestepisodenum = e
                 print(f"Longest episode so far with length {eplen}!\n")
             break
-    
+
     agent.replay()
-exit()
+
+agent.save("model.pth")
+print(f"Maximum Score: {maxscores} in episode {episodewithmaxscore}")
