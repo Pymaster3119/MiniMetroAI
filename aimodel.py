@@ -16,25 +16,18 @@ register(
 class DQN(nn.Module):
     def __init__(self, state_size, action_size):
         super(DQN, self).__init__()
-        self.conv1 = nn.Conv1d(in_channels=1, out_channels=16, kernel_size=5, stride=2) 
-        self.conv2 = nn.Conv1d(in_channels=16, out_channels=32, kernel_size=5, stride=2) 
-
-        conv_output_size = (state_size - 4) // 2
-        conv_output_size = (conv_output_size - 4) // 2
-        conv_output_size *= 32
-        layersizes = [conv_output_size, 64, 64, action_size]
-        layers = []
-        for i in range(1, len(layersizes)):
-            layers.append(nn.Linear(layersizes[i-1], layersizes[i]))
-        self.layers = nn.ModuleList(layers)
-    
+        self.fc1 = nn.Linear(state_size, 512)
+        self.fc2 = nn.Linear(512, 256)
+        self.fc3 = nn.Linear(256, 256)
+        self.fc4 = nn.Linear(256, 256)
+        self.fc5 = nn.Linear(256, action_size)
+ 
     def forward(self, x):
-        x = x.view(x.size(0), 1, -1)
-        x = torch.relu(self.conv1(x))
-        x = torch.relu(self.conv2(x))
-        x = x.view(x.size(0), -1)
-        for i in self.layers:
-            x = torch.relu(i(x))
+        x = torch.relu(self.fc1(x))
+        x = torch.relu(self.fc2(x))
+        x = torch.relu(self.fc3(x))
+        x = torch.relu(self.fc4(x))
+        x = self.fc5(x)
         return x
 
 
@@ -76,21 +69,21 @@ class Agent:
         minibatch = random.sample(self.memory, min(len(self.memory), self.batch_size))
         states, targets_f = [], []
         for state, action, reward, next_state, done in minibatch:
-            state_array = np.array(state)
-            next_state_array = np.array(next_state)
+            state_array = np.array(state).flatten()
+            next_state_array = np.array(next_state).flatten()
             state_tensor = torch.FloatTensor(state_array).to(self.device)
             next_state_tensor = torch.FloatTensor(next_state_array).to(self.device)
-            target = reward if done else reward + self.gamma * torch.max(self.model(next_state_tensor)).item()
+            target = reward
+            if not done:
+                target = reward + self.gamma * torch.max(self.model(next_state_tensor)).item()
             target_f = self.model(state_tensor)
             target_f = target_f.clone().detach()
-            if action[0] < target_f.size(1):
-                target_f[0][action[0]] = target
-            states.append(state_tensor.unsqueeze(0))
-            targets_f.append(target_f.unsqueeze(0))
-        states = torch.cat(states)
-        targets_f = torch.cat(targets_f)
-        if targets_f.size(1) != states.size(1):
-            targets_f = targets_f.view_as(states)
+            if action[0] < target_f.size(0):
+                target_f[action[0]] = target
+            states.append(state_tensor)
+            targets_f.append(target_f)
+        states = torch.stack(states)
+        targets_f = torch.stack(targets_f)
         self.optimizer.zero_grad()
         outputs = self.model(states)
         loss = self.criterion(outputs, targets_f)
@@ -111,7 +104,9 @@ state_size = env.observation_space.shape[0]
 action_size = env.action_space.shape[0]
 agent = Agent(state_size, action_size)
 
-episodes = 50_000
+torch.set_num_threads(16)
+
+episodes = 2_000
 maxscores = -(10**10)
 episodewithmaxscore = -1
 longestepisode = -(10**10)
@@ -150,6 +145,9 @@ for e in tqdm.tqdm(range(episodes)):
             break
 
     agent.replay()
+    if (e / episodes) * 100 % 1 == 0:
+        agent.save("snapshot" + str(round((e/episodes) * 100)) + ".pth")
+env.close()
 
 agent.save("model.pth")
 print(f"Maximum Score: {maxscores} in episode {episodewithmaxscore}")
