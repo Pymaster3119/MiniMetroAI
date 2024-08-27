@@ -90,3 +90,4 @@ Maximum score: -100 in episode: 71 	 Maximum length: 125 in episode: 152 	 Snaps
 Maximum score: -90 in episode: 194 	 Maximum length: 125 in episode: 152 	 Snapshot stored in snapshot97.pth
 Maximum score: -90 in episode: 194 	 Maximum length: 125 in episode: 152 	 Snapshot stored in snapshot98.pth
 Maximum score: -90 in episode: 194 	 Maximum length: 125 in episode: 152 	 Snapshot stored in snapshot99.pth
+Maximum score: -430 in episode: 0 	 Maximum length: 75 in episode: 0 	 Snapshot stored in snapshot0.pth
