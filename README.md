@@ -12,7 +12,7 @@ To run the project locally, follow these steps:
 
 1. Clone the repository:
 
-git clone https://github.com/yourusername/minimetro-ai.git
+git clone https://github.com/pymaster3119/minimetro-ai.git
 
 3. Start the game and AI:
 

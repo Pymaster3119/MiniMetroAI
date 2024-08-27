@@ -98,56 +98,63 @@ class Agent:
 
     def save(self, name):
         torch.save(self.model.state_dict(), name)
+scores = []
+epsilons = []
+episodelengths = []
 
-env = gym.make('MiniMetro-v0')
-state_size = env.observation_space.shape[0]
-action_size = env.action_space.shape[0]
-agent = Agent(state_size, action_size)
-
-torch.set_num_threads(16)
-
-episodes = 2_000
+episodes = 200
 maxscores = -(10**10)
 episodewithmaxscore = -1
 longestepisode = -(10**10)
 longestepisodenum = -1
 
-scores = []
-epsilons = []
-episodelengths = []
+episodenum = 0
 
-for e in tqdm.tqdm(range(episodes)):
-    state = env.reset()[0]
-    done = False
-    time = 0
-    eplen = 0
+def main():
+    global scores, epsilons, episodelengths, episodes, maxscores, episodewithmaxscore, longestepisode, longestepisodenum, episodenum
+    env = gym.make('MiniMetro-v0')
+    state_size = env.observation_space.shape[0]
+    action_size = env.action_space.shape[0]
+    agent = Agent(state_size, action_size)
 
-    while not done:
-        action = agent.act([state])
-        next_state, reward, done, _, _ = env.step(action)
-        agent.remember([state], action, reward, [next_state], done)
-        state = next_state
-        time += 1
-        eplen += 1
+    torch.set_num_threads(16)
 
-        if done:
-            scores.append(reward)
-            epsilons.append(agent.epsilon)
-            episodelengths.append(eplen)
-            if reward > maxscores:
-                maxscores = reward
-                episodewithmaxscore = e
-                print(f"High score of {reward} points!\n")
-            if eplen > longestepisode:
-                longestepisode = eplen
-                longestepisodenum = e
-                print(f"Longest episode so far with length {eplen}!\n")
-            break
+    for e in range(episodes):
+        episodenum = e
+        state = env.reset()[0]
+        done = False
+        time = 0
+        eplen = 0
 
-    agent.replay()
-    if (e / episodes) * 100 % 1 == 0:
-        agent.save("snapshot" + str(round((e/episodes) * 100)) + ".pth")
-env.close()
+        while not done:
+            action = agent.act([state])
+            next_state, reward, done, _, _ = env.step(action)
+            agent.remember([state], action, reward, [next_state], done)
+            state = next_state
+            time += 1
+            eplen += 1
 
-agent.save("model.pth")
-print(f"Maximum Score: {maxscores} in episode {episodewithmaxscore}")
+            if done:
+                scores.append(reward)
+                epsilons.append(agent.epsilon)
+                episodelengths.append(eplen)
+                if reward > maxscores:
+                    maxscores = reward
+                    episodewithmaxscore = e
+                if eplen > longestepisode:
+                    longestepisode = eplen
+                    longestepisodenum = e
+                break
+
+        agent.replay()
+        if (e / episodes) * 100 % 1 == 0:
+            agent.save("snapshot" + str(round((e/episodes) * 100)) + ".pth")
+            with open("log.txt", "a") as txt:
+                txt.write(f"Maximum score: {maxscores} in episode: {episodewithmaxscore} \t Maximum length: {longestepisode} in episode: {longestepisodenum} \t Snapshot stored in snapshot{str(round((e/episodes) * 100))}.pth\n")
+    env.close()
+
+    agent.save("model.pth")
+    print(f"Maximum Score: {maxscores} in episode {episodewithmaxscore}")
+
+if __name__ == "__main__":
+    main()
