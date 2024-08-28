@@ -70,7 +70,7 @@ def updateGame(timestamp):
                         for k in range(2, 8):
                             if metro[k] == stationtype:
                                 metro[k] = 0
-                                score += 1
+                                score += 10
 
                         # Load up passengers
                         for k in range(5, -1, -1):
@@ -121,7 +121,7 @@ def addToMetroLine(line, stopindexx, stopindexy):
             raise IndexError
         stopindex = (stopindexx, stopindexy)
         if stationtypes[stopindex[0]][stopindex[1]] == 0:
-            score -= 10
+            score -= 100
             errors += 1
             return
 
@@ -130,15 +130,16 @@ def addToMetroLine(line, stopindexx, stopindexy):
             if routes[line, i, 0] != 0 and routes[line, i, 1] != 0:
                 index = i
         if not (routes[line][0][0] == 0 and routes[line][0][1] == 0):
-            score -= 10
+            score -= 100
             errors += 1
             return
 
         routes[line][index + 1][0] = stopindex[0]
         routes[line][index + 1][1] = stopindex[1]
+        score += 1
     except IndexError:
-        score -= 10
-        errors += 1
+        score -= 100
+        errors += 5
 
 def addMetroToLine(line):
     global stationtypes, connections, routes, timer, stationspawntimer, passengerspawntimer, gameended, score, metrospeed, errors
@@ -150,11 +151,12 @@ def addMetroToLine(line):
             if metros[i][0] == 0 and metros[i][1] == 0:
                 index = i
         if index == -1:
-            score -= 10
+            score -= 100
             errors += 1
         metros[index][0] = line
+        score += 1
     except:
-        score -= 10
+        score -= 100
         errors += 1
 
 def removeLastPointFromMetroLine(line):
@@ -170,6 +172,7 @@ def removeLastPointFromMetroLine(line):
             return
         routes[line, index, 0] = 0
         routes[line, index, 1] = 0
+        score += 1
     except:
-        score -= 10
+        score -= 100
 errors += 1

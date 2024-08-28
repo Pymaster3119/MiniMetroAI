@@ -51,7 +51,8 @@ class Env(gymnasium.Env):
             rg.addToMetroLine(action[1], action[2], action[3])
         elif action[0] == 2:
             rg.removeLastPointFromMetroLine(action[1])
-
+        else:
+            rg.score -= 100
         # Gather the updated state
         self.state = self.gatherstate()
 
