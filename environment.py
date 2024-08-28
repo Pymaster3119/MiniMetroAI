@@ -34,10 +34,10 @@ class Env(gymnasium.Env):
         return self.state, {}
 
     def step(self, action):
-        
+        # Perform game update on GPU
         updateGame(0.1)
 
-        
+        # Execute action based on the action input
         if action[0] == 0:
             addMetroToLine(action[1])
         elif action[0] == 1:
@@ -45,10 +45,10 @@ class Env(gymnasium.Env):
         elif action[0] == 2:
             removeLastPointFromMetroLine(action[1])
 
-        
+        # Gather the updated state
         self.state = self.gatherstate()
 
-        
+        # Compute reward and done status
         reward = score
         done = gameended
 
@@ -58,12 +58,13 @@ class Env(gymnasium.Env):
         pass
 
     def gatherstate(self):
-        
+        # Gather state from global tensors and convert them to NumPy arrays
         state = []
 
+        # Ensure all tensors are on the GPU
         state.extend(stationtypes.cpu().numpy().flatten())
         state.extend(connections.cpu().numpy().flatten())
         state.extend(routes.cpu().numpy().flatten())
         state.extend(metros.cpu().numpy().flatten())
-        print(len(state))
+
         return np.array(state, dtype=np.int64)
