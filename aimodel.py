@@ -102,7 +102,7 @@ scores = []
 epsilons = []
 episodelengths = []
 
-episodes = 200_000
+episodes = 2
 maxscores = -(10**10)
 episodewithmaxscore = -1
 longestepisode = -(10**10)

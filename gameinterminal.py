@@ -1,24 +1,25 @@
 from rungame import *
 import matplotlib.pyplot as plt
 import matplotlib.ticker as plticker
-axes = None
+import numpy as np
+axes = []
 while True:
     updateGame(10)
     print(score)
-    if axes != None:
-        for i in axes:
-            plt.clear(axes)
+    if len(axes) != 0:
+        for i in axs:
+            i.clear()
     else:
         fig, axes = plt.subplots(2, 2, figsize=(10, 5)) 
     axs = []
     for i in range(2):
         for j in range(2):
             axs.append(axes[i][j])
-    axs[0].imshow(stationtypes, cmap='gray')
+    axs[0].imshow(stationtypes.cpu(), cmap='gray')
     axs[0].xaxis.set_major_locator(plticker.MultipleLocator(base=1.0))
     axs[0].yaxis.set_major_locator(plticker.MultipleLocator(base=1.0))
     axs[0].grid()
-    axs[1].imshow(np.count_nonzero(connections, axis=2), cmap='gray')
+    axs[1].imshow(np.count_nonzero(connections.cpu(), axis=2), cmap='gray')
 
     axs[2].imshow(np.zeros((30,30, 3)))
     colors = ["red", "blue", "green", "yellow", "purple", "orange", "pink", "cyan"]
@@ -44,7 +45,7 @@ while True:
     line = int(input("What line"))
     x = int(input("what x"))
     y = int(input("what y"))
-    addToMetroLine(line, (x, y))
+    addToMetroLine(line, x, y)
 
     if input("Do you wanna remova line?") == "t":
         removeLastPointFromMetroLine(int(input("What line?")))
