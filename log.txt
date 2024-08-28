@@ -103,3 +103,4 @@ Maximum score: -510 in episode: 0 	 Maximum length: 63 in episode: 0 	 Snapshot 
 Maximum score: -720 in episode: 0 	 Maximum length: 90 in episode: 0 	 Snapshot stored in snapshot0.pth
 Maximum score: -939 in episode: 0 	 Maximum length: 123 in episode: 0 	 Snapshot stored in snapshot0.pth
 Maximum score: -958 in episode: 0 	 Maximum length: 122 in episode: 0 	 Snapshot stored in snapshot0.pth
+Maximum score: -800 in episode: 0 	 Maximum length: 109 in episode: 0 	 Snapshot stored in snapshot0.pth

@@ -3,6 +3,7 @@ import matplotlib.animation as animation
 import numpy as np
 import threading
 import aimodel as ai
+import time
 # Set up the figure and multiple subplots
 fig, axs = plt.subplots(7, 1)
 x_data = []
@@ -20,7 +21,7 @@ def init():
 
 # Update function for the animation
 def update(frame):
-    global highscores, highlengths
+    global highscores, highlengths, starttime
     x_data = list(range(len(ai.episodelengths)))
 
     if len(highscores) < len(x_data):
@@ -40,6 +41,8 @@ def update(frame):
     axs[6].set_xlim(0,ai.episodes)
     axs[6].set_xticks(np.arange(0, ai.episodes + 1, ai.episodes/25))
 
+    elapsedtime = time.time() - starttime
+    axs[6].text((ai.episodes/100) * 20, 0, f"Episodes/second: {ai.episodenum/elapsedtime}", color = "black")
     axs[6].text((ai.episodes/100) * 40, 0, f"Episode {ai.episodenum} of {ai.episodes}", color = "black")
     axs[6].text((ai.episodes/100) * 70, 0, f"High score {ai.maxscores} at point {ai.episodewithmaxscore}", color = "black")
     axs[6].text((ai.episodes/100) * 90, 0, f"Longest episode {ai.longestepisode} at point {ai.longestepisodenum}", color = "black")
@@ -47,6 +50,8 @@ def update(frame):
 
 def start():
     ai.main()
+
+starttime = time.time()
 
 threading.Thread(target=start).start()
 
