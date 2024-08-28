@@ -102,7 +102,7 @@ scores = []
 epsilons = []
 episodelengths = []
 
-episodes = 2
+episodes = 200_000
 maxscores = -(10**10)
 episodewithmaxscore = -1
 longestepisode = -(10**10)
@@ -135,7 +135,6 @@ def main():
             state = next_state
             time += 1
             eplen += 1
-
             if done:
                 scores.append(reward)
                 epsilons.append(agent.epsilon)

@@ -42,7 +42,7 @@ class Env(gymnasium.Env):
 
     def step(self, action):
         # Perform game update on GPU
-        rg.updateGame(1)
+        rg.updateGame(0.1)
 
         # Execute action based on the action input
         if action[0] == 0:
