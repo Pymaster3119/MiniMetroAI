@@ -35,11 +35,14 @@ def update(frame):
     for ax in axs:
         ax.relim()
         ax.autoscale_view()
-
+    axs[5].clear()
     axs[5].barh(0,ai.episodenum, color='skyblue')
     axs[5].set_xlim(0,ai.episodes)
-    axs[5].set_xticks(np.arange(0, ai.episodes + 1, ai.episodes/50))
+    axs[5].set_xticks(np.arange(0, ai.episodes + 1, ai.episodes/25))
 
+    axs[5].text((ai.episodes/100) * 40, 0, f"Episode {ai.episodenum} of {ai.episodes}", color = "black")
+    axs[5].text((ai.episodes/100) * 70, 0, f"High score {ai.maxscores} at point {ai.episodewithmaxscore}", color = "black")
+    axs[5].text((ai.episodes/100) * 90, 0, f"Longest episode {ai.longestepisode} at point {ai.longestepisodenum}", color = "black")
     return lines
 
 def start():

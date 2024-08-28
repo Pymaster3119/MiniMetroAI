@@ -46,7 +46,6 @@ def updateGame(timestamp):
                     assigned = True
                     break
             if not assigned:
-                print("Here")
                 gameended = True
 
     # Deal with the metros

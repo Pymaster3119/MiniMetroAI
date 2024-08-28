@@ -2,7 +2,7 @@ import gymnasium
 from gymnasium import spaces
 import numpy as np
 import torch
-from rungame import *
+import rungame as rg
 
 device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
 
@@ -17,41 +17,44 @@ class Env(gymnasium.Env):
     def reset(self, seed=None, options=None):
         global stationtypes, connections, routes, timer, stationspawntimer, passangerspawntimer, spawnweights, metros, gameended, score, metrospeed
         
-        stationtypes = torch.zeros((30, 30), dtype=torch.int32, device=device)
-        connections = torch.zeros((30, 30, 6), dtype=torch.int32, device=device)
-        routes = torch.zeros((7, 8, 2), dtype=torch.int32, device=device)
-        timer = 0
-        stationspawntimer = 0
-        passangerspawntimer = 0
-        spawnweights = torch.tensor([0.7, 0.15, 0.1, 0.05], device=device)
-        metros = torch.zeros((7, 8), dtype=torch.int32, device=device)
-        gameended = False
-        score = 0
-        metrospeed = 5
-        metros[:, 0] = -1
+        #Stationtypes - 1 is circle, 2 is triangle, 3 is rectangle, and 4 is misc
+        rg.stationtypes = torch.zeros((30, 30), device='cuda' if torch.cuda.is_available() else 'mps' if torch.backends.mps.is_available() else 'cpu')
+        #List of passengers - 6 passengers max
+        rg.connections = torch.zeros((30, 30, 6), device='cuda' if torch.cuda.is_available() else 'mps' if torch.backends.mps.is_available() else 'cpu')
+        #List of routes - 7 routes, 8 stations/route, 2 coordinates/stations
+        rg.routes = torch.zeros((7, 8, 2), device='cuda' if torch.cuda.is_available() else 'mps' if torch.backends.mps.is_available() else 'cpu')
+        rg.timer = 0
+        rg.stationspawntimer = 0
+        rg.passengerspawntimer = 0
+        rg.spawnweights = [0.7, 0.15, 0.1, 0.05]
+        #Metros - 7 metros, for each metro, 0 represents the route number (-1 is invalid), 1 represents distance along route, and 2-7 represents the passengers
+        rg.metros = torch.zeros((7, 8), device='cuda' if torch.cuda.is_available() else 'mps' if torch.backends.mps.is_available() else 'cpu')
+        rg.metros[:, 0] = -1
+        rg.gameended = False
+        rg.score = 0
+        rg.metrospeed = 5
 
         self.state = self.gatherstate()
         return self.state, {}
 
     def step(self, action):
         # Perform game update on GPU
-        updateGame(0.1)
+        rg.updateGame(1)
 
         # Execute action based on the action input
         if action[0] == 0:
-            addMetroToLine(action[1])
+            rg.addMetroToLine(action[1])
         elif action[0] == 1:
-            addToMetroLine(action[1], action[2], action[3])
+            rg.addToMetroLine(action[1], action[2], action[3])
         elif action[0] == 2:
-            removeLastPointFromMetroLine(action[1])
+            rg.removeLastPointFromMetroLine(action[1])
 
         # Gather the updated state
         self.state = self.gatherstate()
 
         # Compute reward and done status
-        reward = score
-        done = gameended
-
+        reward = rg.score
+        done = rg.gameended
         return self.state, reward, done, False, {}
 
     def close(self):
@@ -62,9 +65,9 @@ class Env(gymnasium.Env):
         state = []
 
         # Ensure all tensors are on the GPU
-        state.extend(stationtypes.cpu().numpy().flatten())
-        state.extend(connections.cpu().numpy().flatten())
-        state.extend(routes.cpu().numpy().flatten())
-        state.extend(metros.cpu().numpy().flatten())
+        state.extend(rg.stationtypes.cpu().numpy().flatten())
+        state.extend(rg.connections.cpu().numpy().flatten())
+        state.extend(rg.routes.cpu().numpy().flatten())
+        state.extend(rg.metros.cpu().numpy().flatten())
 
         return np.array(state, dtype=np.int64)
