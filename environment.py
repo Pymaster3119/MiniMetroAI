@@ -13,6 +13,7 @@ class Env(gymnasium.Env):
         self.observation_space = spaces.Box(low=-1, high=10, shape=(6468,), dtype=np.int64)
         self.state = None
         self.reset()
+        self.errors = 0
 
     def reset(self, seed=None, options=None):
         global stationtypes, connections, routes, timer, stationspawntimer, passangerspawntimer, spawnweights, metros, gameended, score, metrospeed
@@ -33,6 +34,8 @@ class Env(gymnasium.Env):
         rg.gameended = False
         rg.score = 0
         rg.metrospeed = 5
+        rg.errors = 0
+        self.errors = 0
 
         self.state = self.gatherstate()
         return self.state, {}
@@ -55,6 +58,7 @@ class Env(gymnasium.Env):
         # Compute reward and done status
         reward = rg.score
         done = rg.gameended
+        self.errors = rg.errors
         return self.state, reward, done, False, {}
 
     def close(self):

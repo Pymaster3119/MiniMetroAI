@@ -18,9 +18,10 @@ metros[:, 0] = -1
 gameended = False
 score = 0
 metrospeed = 5
+errors = 0
 
 def updateGame(timestamp):
-    global stationtypes, connections, routes, timer, stationspawntimer, passengerspawntimer, gameended, score, metrospeed
+    global stationtypes, connections, routes, timer, stationspawntimer, passengerspawntimer, gameended, score, metrospeed, errors
     if gameended:
         return
     timer += timestamp
@@ -81,7 +82,7 @@ def updateGame(timestamp):
                                     break
 
 def findPositionOfMetro(metro):
-    global stationtypes, connections, routes, timer, stationspawntimer, passengerspawntimer, gameended, score, metrospeed
+    global stationtypes, connections, routes, timer, stationspawntimer, passengerspawntimer, gameended, score, metrospeed, errors
     route = metro[0]
     distancealongroute = metro[1]
     routelength = lengthAlongLine(route)
@@ -105,7 +106,7 @@ def findPositionOfMetro(metro):
     return (0, 0)
 
 def lengthAlongLine(line):
-    global stationtypes, connections, routes, timer, stationspawntimer, passengerspawntimer, gameended, score, metrospeed
+    global stationtypes, connections, routes, timer, stationspawntimer, passengerspawntimer, gameended, score, metrospeed, errors
     length = 0
     for i in range(8):
         station = routes[int(line)][int(i)]
@@ -114,13 +115,14 @@ def lengthAlongLine(line):
     return length
 
 def addToMetroLine(line, stopindexx, stopindexy):
-    global stationtypes, connections, routes, timer, stationspawntimer, passengerspawntimer, gameended, score, metrospeed
+    global stationtypes, connections, routes, timer, stationspawntimer, passengerspawntimer, gameended, score, metrospeed, errors
     try:
         if line >= 7:
             raise IndexError
         stopindex = (stopindexx, stopindexy)
         if stationtypes[stopindex[0]][stopindex[1]] == 0:
             score -= 10
+            errors += 1
             return
 
         index = 0
@@ -129,15 +131,17 @@ def addToMetroLine(line, stopindexx, stopindexy):
                 index = i
         if not (routes[line][0][0] == 0 and routes[line][0][1] == 0):
             score -= 10
+            errors += 1
             return
 
         routes[line][index + 1][0] = stopindex[0]
         routes[line][index + 1][1] = stopindex[1]
     except IndexError:
         score -= 10
+        errors += 1
 
 def addMetroToLine(line):
-    global stationtypes, connections, routes, timer, stationspawntimer, passengerspawntimer, gameended, score, metrospeed
+    global stationtypes, connections, routes, timer, stationspawntimer, passengerspawntimer, gameended, score, metrospeed, errors
     try:
         if line >= 7:
             raise IndexError
@@ -147,12 +151,14 @@ def addMetroToLine(line):
                 index = i
         if index == -1:
             score -= 10
+            errors += 1
         metros[index][0] = line
     except:
         score -= 10
+        errors += 1
 
 def removeLastPointFromMetroLine(line):
-    global stationtypes, connections, routes, timer, stationspawntimer, passengerspawntimer, gameended, score, metrospeed
+    global stationtypes, connections, routes, timer, stationspawntimer, passengerspawntimer, gameended, score, metrospeed, errors
     try:
         if line >= 7:
             raise IndexError
@@ -166,3 +172,4 @@ def removeLastPointFromMetroLine(line):
         routes[line, index, 1] = 0
     except:
         score -= 10
+errors += 1

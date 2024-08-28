@@ -36,9 +36,9 @@ class Agent:
         self.state_size = state_size
         self.action_size = action_size
         self.memory = deque(maxlen=100000)
-        self.gamma = 0.95    # discount rate
+        self.gamma = 0.99    # discount rate
         self.epsilon = 1.0  # exploration rate
-        self.epsilon_min = 0.01
+        self.epsilon_min = 0.05
         self.epsilon_decay = 0.995
         self.learning_rate = 0.0001
         self.batch_size = 256
@@ -110,8 +110,10 @@ longestepisodenum = -1
 
 episodenum = 0
 
+errors = []
+
 def main():
-    global scores, epsilons, episodelengths, episodes, maxscores, episodewithmaxscore, longestepisode, longestepisodenum, episodenum
+    global scores, epsilons, episodelengths, episodes, maxscores, episodewithmaxscore, longestepisode, longestepisodenum, episodenum, errors
     env = gym.make('MiniMetro-v0')
     state_size = env.observation_space.shape[0]
     action_size = env.action_space.shape[0]
@@ -138,6 +140,7 @@ def main():
                 scores.append(reward)
                 epsilons.append(agent.epsilon)
                 episodelengths.append(eplen)
+                errors.append(env.get_wrapper_attr('errors'))
                 if reward > maxscores:
                     maxscores = reward
                     episodewithmaxscore = e
