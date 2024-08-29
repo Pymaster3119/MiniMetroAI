@@ -124,7 +124,7 @@ def addToMetroLine(line, stopindexx, stopindexy):
         stopindex = (stopindexx, stopindexy)
         if stationtypes[stopindex[0]][stopindex[1]] == 0:
             if counterrorsasreducedscore:
-                score -= 100
+                score -= 50
             
             errors += 1
             return
@@ -135,17 +135,17 @@ def addToMetroLine(line, stopindexx, stopindexy):
                 index = i
         if not (routes[line][0][0] == 0 and routes[line][0][1] == 0):
             if counterrorsasreducedscore:
-                score -= 100
+                score -= 50
             
             errors += 1
             return
 
         routes[line][index + 1][0] = stopindex[0]
         routes[line][index + 1][1] = stopindex[1]
-        score += 10
+        score += 20
     except IndexError:
         if counterrorsasreducedscore:
-            score -= 100
+            score -= 50
         
         errors += 5
 
@@ -160,14 +160,14 @@ def addMetroToLine(line):
                 index = i
         if index == -1:
             if counterrorsasreducedscore:
-                score -= 100
+                score -= 50
             
             errors += 1
         metros[index][0] = line
-        score += 10
+        score += 20
     except:
         if counterrorsasreducedscore:
-            score -= 100
+            score -= 50
         
         errors += 1
 
@@ -184,9 +184,9 @@ def removeLastPointFromMetroLine(line):
             return
         routes[line, index, 0] = 0
         routes[line, index, 1] = 0
-        score += 10
+        score += 20
     except:
         if counterrorsasreducedscore:
-            score -= 100
+            score -= 50
         
         errors += 1

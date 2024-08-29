@@ -39,14 +39,14 @@ class Agent:
     def __init__(self, state_size, action_size):
         self.state_size = state_size
         self.action_size = action_size
-        self.memory = deque(maxlen=100000)
+        self.memory = deque(maxlen=200000)
         self.gamma = 0.99    # discount rate
         self.epsilon = 1.0  # exploration rate
         self.epsilon_min = 0.05
-        self.epsilon_decay = 0.999
-        self.learning_rate = 0.0001
-        self.batch_size = 256
-        self.train_start = 1000
+        self.epsilon_decay = 0.99998
+        self.learning_rate = 0.001
+        self.batch_size = 1024
+        self.train_start = 5000
         self.device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
         self.model = DQN(state_size, action_size).to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate)
@@ -57,7 +57,7 @@ class Agent:
     
     def act(self, state):
         if np.random.rand() <= self.epsilon:
-            return [random.randint(0, 2), random.randint(0, 10), random.randint(0, 31), random.randint(0, 31)]
+            return [random.randint(0, 2), random.randint(0, 31), random.randint(0, 31), random.randint(0, 31)]
         
         state_array = np.array(state)
         state_tensor = torch.FloatTensor(state_array).to(self.device)
