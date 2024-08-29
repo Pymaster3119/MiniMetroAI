@@ -72,7 +72,7 @@ def updateGame(timestamp):
                         for k in range(2, 8):
                             if metro[k] == stationtype:
                                 metro[k] = 0
-                                score += 10
+                                score += 100
 
                         # Load up passengers
                         for k in range(5, -1, -1):
@@ -142,7 +142,7 @@ def addToMetroLine(line, stopindexx, stopindexy):
 
         routes[line][index + 1][0] = stopindex[0]
         routes[line][index + 1][1] = stopindex[1]
-        score += 1
+        score += 10
     except IndexError:
         if counterrorsasreducedscore:
             score -= 100
@@ -164,7 +164,7 @@ def addMetroToLine(line):
             
             errors += 1
         metros[index][0] = line
-        score += 1
+        score += 10
     except:
         if counterrorsasreducedscore:
             score -= 100
@@ -184,7 +184,7 @@ def removeLastPointFromMetroLine(line):
             return
         routes[line, index, 0] = 0
         routes[line, index, 1] = 0
-        score += 1
+        score += 10
     except:
         if counterrorsasreducedscore:
             score -= 100
