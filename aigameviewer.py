@@ -10,6 +10,7 @@ import time
 device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
 model = DQN(state_size=6468, action_size=4)
 model.load_state_dict(torch.load(input("Which model file do you want?")))
+rg.counterrorsasreducedscore = input("Do you want to keep the errors counted as score? y/n").strip().lower() == 'y'
 model.to(device)
 model.eval()
 
@@ -72,7 +73,7 @@ while True:
             rect = plt.Rectangle(pos - 0.5, 3, 1, color="blue") 
             axs[2].add_patch(rect)
 
-    axs[3].text(0, 0, f'Score: {rg.score}')
+    axs[3].text(0, 0, f'Score: {rg.score} Errors:{rg.errors}')
     plt.show(block=False)
 
     

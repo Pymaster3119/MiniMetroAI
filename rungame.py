@@ -19,6 +19,8 @@ gameended = False
 score = 0
 metrospeed = 5
 errors = 0
+counterrorsasreducedscore = True
+
 
 def updateGame(timestamp):
     global stationtypes, connections, routes, timer, stationspawntimer, passengerspawntimer, gameended, score, metrospeed, errors
@@ -121,7 +123,8 @@ def addToMetroLine(line, stopindexx, stopindexy):
             raise IndexError
         stopindex = (stopindexx, stopindexy)
         if stationtypes[stopindex[0]][stopindex[1]] == 0:
-            score -= 100
+            if counterrorsasreducedscore:
+                score -= 100
             
             errors += 1
             return
@@ -131,7 +134,8 @@ def addToMetroLine(line, stopindexx, stopindexy):
             if routes[line, i, 0] != 0 and routes[line, i, 1] != 0:
                 index = i
         if not (routes[line][0][0] == 0 and routes[line][0][1] == 0):
-            score -= 100
+            if counterrorsasreducedscore:
+                score -= 100
             
             errors += 1
             return
@@ -140,7 +144,8 @@ def addToMetroLine(line, stopindexx, stopindexy):
         routes[line][index + 1][1] = stopindex[1]
         score += 1
     except IndexError:
-        score -= 100
+        if counterrorsasreducedscore:
+            score -= 100
         
         errors += 5
 
@@ -154,13 +159,15 @@ def addMetroToLine(line):
             if metros[i][0] == 0 and metros[i][1] == 0:
                 index = i
         if index == -1:
-            score -= 100
+            if counterrorsasreducedscore:
+                score -= 100
             
             errors += 1
         metros[index][0] = line
         score += 1
     except:
-        score -= 100
+        if counterrorsasreducedscore:
+            score -= 100
         
         errors += 1
 
@@ -179,6 +186,7 @@ def removeLastPointFromMetroLine(line):
         routes[line, index, 1] = 0
         score += 1
     except:
-        score -= 100
+        if counterrorsasreducedscore:
+            score -= 100
         
         errors += 1

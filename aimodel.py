@@ -39,7 +39,7 @@ class Agent:
         self.gamma = 0.99    # discount rate
         self.epsilon = 1.0  # exploration rate
         self.epsilon_min = 0.05
-        self.epsilon_decay = 0.995
+        self.epsilon_decay = 0.999
         self.learning_rate = 0.0001
         self.batch_size = 256
         self.train_start = 1000
