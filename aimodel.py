@@ -20,14 +20,18 @@ class DQN(nn.Module):
         self.fc2 = nn.Linear(512, 256)
         self.fc3 = nn.Linear(256, 256)
         self.fc4 = nn.Linear(256, 256)
-        self.fc5 = nn.Linear(256, action_size)
+        self.fc5 = nn.Linear(256, 256)
+        self.fc6 = nn.Linear(256, 256)
+        self.fc7 = nn.Linear(256, action_size)
  
     def forward(self, x):
         x = torch.relu(self.fc1(x))
         x = torch.relu(self.fc2(x))
         x = torch.relu(self.fc3(x))
         x = torch.relu(self.fc4(x))
-        x = self.fc5(x)
+        x = torch.relu(self.fc5(x))
+        x = torch.relu(self.fc6(x))
+        x = self.fc7(x)
         return x
 
 
